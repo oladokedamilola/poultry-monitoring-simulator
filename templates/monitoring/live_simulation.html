@@ -1,0 +1,613 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+{% block title %}Live Simulation - {{ block.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* RESET - Override any conflicting styles from parent */
+  .dashboard-content * {
+    all: revert !important;
+    box-sizing: border-box !important;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+  }
+  
+  .dashboard-content {
+    padding: 0 !important;
+    background: #f8f9fa !important;
+  }
+  
+  /* Main Container */
+  .live-sim-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  /* Header */
+  .sim-header {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-left: 6px solid #28a745;
+  }
+  
+  .sim-header h1 {
+    color: #2c3e50;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  
+  .sim-subtitle {
+    color: #6c757d;
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .header-stats {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .stat-badge {
+    background: #e8f5e9;
+    color: #28a745;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  
+  .status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+  
+  .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+  
+  .status-running .status-dot {
+    background: #28a745;
+    animation: pulse 2s infinite;
+  }
+  
+  .status-stopped .status-dot {
+    background: #6c757d;
+  }
+  
+  /* Main Grid */
+  .sim-grid {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 24px;
+  }
+  
+  @media (max-width: 992px) {
+    .sim-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  /* Block Info Card */
+  .info-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    margin-bottom: 24px;
+  }
+  
+  .card-title {
+    color: #2c3e50;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e9ecef;
+  }
+  
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+  }
+  
+  .info-item {
+    margin-bottom: 16px;
+  }
+  
+  .info-label {
+    color: #6c757d;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  
+  .info-value {
+    color: #2c3e50;
+    font-size: 18px;
+    font-weight: 600;
+  }
+  
+  /* Control Panel */
+  .control-panel {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+  
+  .control-btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 12px;
+    text-align: center;
+    text-decoration: none;
+  }
+  
+  .btn-start {
+    background: linear-gradient(135deg, #28a745, #218838);
+    color: white;
+  }
+  
+  .btn-stop {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+  }
+  
+  .btn-secondary {
+    background: #6c757d;
+    color: white;
+  }
+  
+  .control-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Data Cards */
+  .data-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+  }
+  
+  .data-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    border-top: 4px solid #007bff;
+  }
+  
+  .data-card.temp { border-top-color: #dc3545; }
+  .data-card.humidity { border-top-color: #17a2b8; }
+  .data-card.ammonia { border-top-color: #ffc107; }
+  .data-card.activity { border-top-color: #28a745; }
+  
+  .data-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 10px 0;
+  }
+  
+  .data-label {
+    color: #6c757d;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .data-time {
+    color: #adb5bd;
+    font-size: 12px;
+    margin-top: 8px;
+  }
+  
+  /* Alerts */
+  .alert-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    margin-top: 24px;
+  }
+  
+  .alert-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  
+  .alert-count {
+    background: #ffc107;
+    color: #212529;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  
+  .alert-item {
+    padding: 16px;
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+  
+  .alert-item.critical {
+    background: #f8d7da;
+    border-left-color: #dc3545;
+  }
+  
+  .alert-title {
+    font-weight: 600;
+    color: #856404;
+    margin-bottom: 4px;
+  }
+  
+  .alert-title.critical {
+    color: #721c24;
+  }
+  
+  .alert-message {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  
+  .alert-time {
+    color: #999;
+    font-size: 12px;
+  }
+  
+  /* Empty States */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+  }
+  
+  .empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+  
+  /* Animations */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  
+  /* Utility Classes */
+  .text-success { color: #28a745 !important; }
+  .text-warning { color: #ffc107 !important; }
+  .text-danger { color: #dc3545 !important; }
+  .text-muted { color: #6c757d !important; }
+  
+  .mb-3 { margin-bottom: 1rem !important; }
+  .mb-4 { margin-bottom: 1.5rem !important; }
+  .mt-3 { margin-top: 1rem !important; }
+  .mt-4 { margin-top: 1.5rem !important; }
+  
+  .d-flex { display: flex !important; }
+  .align-center { align-items: center !important; }
+  .justify-between { justify-content: space-between !important; }
+  .flex-wrap { flex-wrap: wrap !important; }
+  .gap-2 { gap: 0.5rem !important; }
+  .gap-3 { gap: 1rem !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="live-sim-container">
+  <!-- Header -->
+  <div class="sim-header">
+    <h1>Live Simulation: {{ block.name }}</h1>
+    <p class="sim-subtitle">Real-time monitoring and simulation control</p>
+    
+    <div class="d-flex justify-between align-center flex-wrap gap-3">
+      <div class="header-stats">
+        <div class="stat-item">
+          <span class="stat-badge">{{ block.number_of_birds }} birds</span>
+        </div>
+        <div class="stat-item">
+          <span class="text-muted">{{ block.get_breed_display }} · {{ block.get_age_group_display }}</span>
+        </div>
+      </div>
+      
+      <div class="status-indicator {% if simulator_running %}status-running{% else %}status-stopped{% endif %}">
+        <span class="status-dot"></span>
+        <span>{% if simulator_running %}Simulation Running{% else %}Simulation Stopped{% endif %}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sim-grid">
+    <!-- Left Column - Main Content -->
+    <div>
+      <!-- Block Information -->
+      <div class="info-card">
+        <h2 class="card-title">Block Information</h2>
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-label">Block Name</div>
+            <div class="info-value">{{ block.name }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Number of Birds</div>
+            <div class="info-value">{{ block.number_of_birds }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Breed</div>
+            <div class="info-value">{{ block.get_breed_display }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Age Group</div>
+            <div class="info-value">{{ block.get_age_group_display }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Created</div>
+            <div class="info-value">{{ block.created_at|date:"M d, Y" }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Last Updated</div>
+            <div class="info-value">{{ block.updated_at|date:"M d, Y H:i" }}</div>
+          </div>
+        </div>
+        
+        {% if block.description %}
+        <div class="info-item mt-4">
+          <div class="info-label">Description</div>
+          <div style="color: #495057; line-height: 1.6; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+            {{ block.description|linebreaks }}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Latest Sensor Data -->
+      <div class="info-card">
+        <h2 class="card-title">Latest Sensor Readings</h2>
+        
+        {% if latest_data %}
+        <div class="data-grid">
+          <div class="data-card temp">
+            <div class="data-label">Temperature</div>
+            <div class="data-value">{{ latest_data.temperature|floatformat:1 }}°C</div>
+            <div class="data-time">{{ latest_data.timestamp|timesince }} ago</div>
+          </div>
+          
+          <div class="data-card humidity">
+            <div class="data-label">Humidity</div>
+            <div class="data-value">{{ latest_data.humidity|floatformat:1 }}%</div>
+            <div class="data-time">{{ latest_data.timestamp|timesince }} ago</div>
+          </div>
+          
+          <div class="data-card ammonia">
+            <div class="data-label">Ammonia</div>
+            <div class="data-value">{{ latest_data.ammonia|floatformat:1 }} ppm</div>
+            <div class="data-time">{{ latest_data.timestamp|timesince }} ago</div>
+          </div>
+          
+          <div class="data-card activity">
+            <div class="data-label">Activity Level</div>
+            <div class="data-value">{{ latest_data.activity|floatformat:1 }}%</div>
+            <div class="data-time">{{ latest_data.timestamp|timesince }} ago</div>
+          </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <div class="empty-icon">
+            <i class="fas fa-database"></i>
+          </div>
+          <h3 style="color: #6c757d; margin-bottom: 8px;">No Data Available</h3>
+          <p>Start the simulation to generate sensor readings</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Right Column - Controls & Alerts -->
+    <div>
+      <!-- Simulation Controls -->
+      <div class="control-panel">
+        <h2 class="card-title">Simulation Control</h2>
+        
+        {% if simulator_running %}
+          <a href="#" class="control-btn btn-stop">
+            <i class="fas fa-stop me-2"></i>Stop Simulation
+          </a>
+          <p class="text-muted mb-3" style="font-size: 14px;">
+            <i class="fas fa-info-circle me-1"></i>
+            Simulation is actively generating data
+          </p>
+        {% else %}
+          <a href="{% url 'start_sim' block.id %}" class="control-btn btn-start">
+            <i class="fas fa-play me-2"></i>Start Simulation
+          </a>
+          <p class="text-muted mb-3" style="font-size: 14px;">
+            <i class="fas fa-info-circle me-1"></i>
+            Start simulation to begin data generation
+          </p>
+        {% endif %}
+        
+        <a href="{% url 'dashboard' %}" class="control-btn btn-secondary">
+          <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+        
+        <div class="mt-4" style="padding-top: 16px; border-top: 1px solid #e9ecef;">
+          <div class="info-item">
+            <div class="info-label">Current Time</div>
+            <div id="current-time" class="info-value" style="font-family: monospace;">--:--:--</div>
+          </div>
+          <div class="info-item mt-3">
+            <div class="info-label">Last Refresh</div>
+            <div id="last-refresh" class="info-value" style="font-size: 16px;">Just now</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Alerts -->
+      <div class="alert-card">
+        <div class="alert-header">
+          <h2 class="card-title" style="margin: 0;">Active Alerts</h2>
+          <span class="alert-count">{{ active_alerts|length }}</span>
+        </div>
+        
+        {% if active_alerts %}
+          <div>
+            {% for alert in active_alerts %}
+            <div class="alert-item {% if alert.alert_type == 'CRITICAL' %}critical{% endif %}">
+              <div class="alert-title {% if alert.alert_type == 'CRITICAL' %}critical{% endif %}">
+                {{ alert.alert_type }}
+              </div>
+              <div class="alert-message">{{ alert.message }}</div>
+              <div class="alert-time">{{ alert.timestamp|date:"M d, H:i" }}</div>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-icon">
+              <i class="fas fa-check-circle text-success"></i>
+            </div>
+            <h3 style="color: #28a745; margin-bottom: 8px;">All Systems Normal</h3>
+            <p>No active alerts at this time</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Debug Info (Remove in production) -->
+  <div style="margin-top: 24px; padding: 16px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #6c757d;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <small class="text-muted"><i class="fas fa-bug me-1"></i> Debug Information</small>
+      <button id="toggle-debug" style="background: none; border: none; color: #6c757d; cursor: pointer; font-size: 12px;">
+        Show Details
+      </button>
+    </div>
+    <div id="debug-details" style="display: none; font-family: monospace; font-size: 12px; background: white; padding: 12px; border-radius: 4px;">
+      Block ID: {{ block.id }}<br>
+      Template: live_simulation.html<br>
+      Simulator Running: {{ simulator_running }}<br>
+      Data Available: {% if latest_data %}Yes{% else %}No{% endif %}<br>
+      User: {{ request.user.username }}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  console.log('Live Simulation Template Loaded');
+  console.log('Block:', {
+    id: {{ block.id }},
+    name: '{{ block.name|escapejs }}',
+    birds: {{ block.number_of_birds }},
+    running: {{ simulator_running|yesno:"true,false" }}
+  });
+
+  // Update current time
+  function updateCurrentTime() {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+    
+    const timeElement = document.getElementById('current-time');
+    if (timeElement) {
+      timeElement.textContent = timeString;
+    }
+    
+    // Update last refresh time
+    const refreshElement = document.getElementById('last-refresh');
+    if (refreshElement && !refreshElement.dataset.lastUpdate) {
+      refreshElement.dataset.lastUpdate = Date.now();
+    }
+  }
+
+  // Toggle debug details
+  document.getElementById('toggle-debug')?.addEventListener('click', function() {
+    const details = document.getElementById('debug-details');
+    const isVisible = details.style.display === 'block';
+    
+    details.style.display = isVisible ? 'none' : 'block';
+    this.textContent = isVisible ? 'Show Details' : 'Hide Details';
+  });
+
+  // Auto-refresh if simulation is running
+  {% if simulator_running %}
+  let refreshCountdown = 30;
+  
+  function updateRefreshTimer() {
+    const refreshElement = document.getElementById('last-refresh');
+    if (refreshElement) {
+      refreshCountdown--;
+      
+      if (refreshCountdown <= 0) {
+        refreshElement.textContent = 'Refreshing...';
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      } else {
+        refreshElement.textContent = `${refreshCountdown}s ago`;
+        setTimeout(updateRefreshTimer, 1000);
+      }
+    }
+  }
+  
+  // Start refresh timer
+  setTimeout(updateRefreshTimer, 1000);
+  {% endif %}
+
+  // Initialize
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM fully loaded - Live Simulation');
+    
+    // Start time updates
+    updateCurrentTime();
+    setInterval(updateCurrentTime, 1000);
+    
+    // Force all content to be visible (just in case)
+    document.querySelectorAll('.live-sim-container *').forEach(el => {
+      el.style.display = '';
+      el.style.visibility = '';
+      el.style.opacity = '';
+      el.style.height = '';
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,847 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+{% block title %}Update {{ block.name }}{% endblock %}
+
+{% block content %}
+<div class="container-wide py-4">
+    
+    <!-- Page Header -->
+    <div class="update-header mb-5">
+        <div class="d-flex align-items-center mb-2">
+            <a href="#" onclick="goBack()" class="pg-small pg-muted me-2" style="text-decoration: none;">
+                <i class="fas fa-arrow-left me-1"></i>Back to Block Details
+            </a>
+        </div>
+        
+        <div class="header-content">
+            <h1 style="color:var(--pg-forest-green)" class="mb-2">Update Flock Block</h1>
+            <p class="pg-muted mb-0">Modify the details of your <strong id="current-block-name">{{ block.name }}</strong> poultry block</p>
+        </div>
+    </div>
+
+    <!-- Update Form -->
+    <div class="update-form-section">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="update-card">
+                    <!-- Form Header -->
+                    <div class="form-header mb-4">
+                        <div class="form-icon">
+                            <i class="fas fa-edit"></i>
+                        </div>
+                        <div class="form-title">
+                            <h3>Edit Block Information</h3>
+                            <p class="pg-muted">Update the configuration of your poultry monitoring block</p>
+                        </div>
+                    </div>
+
+                    <!-- Simulation Status Alert -->
+                    {% if is_running %}
+                    <div class="simulation-alert alert alert-warning mb-4">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-exclamation-triangle me-2 mt-1"></i>
+                            <div>
+                                <strong>Active Simulation Detected</strong>
+                                <p class="mb-0">Changes to block configuration may not take effect until the simulation is restarted.</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Update Form -->
+                    <form method="POST" id="updateForm">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger mb-4">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Block Name -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">
+                                <i class="fas fa-tag me-2"></i>Block Name
+                            </label>
+                            <div class="input-with-icon">
+                                {{ form.name }}
+                                <i class="fas fa-font input-icon"></i>
+                            </div>
+                            {% if form.name.errors %}
+                            <div class="form-error">
+                                {% for error in form.name.errors %}
+                                    <small><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-helper">Give your block a descriptive name for easy identification</div>
+                        </div>
+
+                        <!-- Number of Birds -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.number_of_birds.id_for_label }}" class="form-label">
+                                <i class="fas fa-dove me-2"></i>Number of Birds
+                            </label>
+                            <div class="input-with-icon">
+                                {{ form.number_of_birds }}
+                                <i class="fas fa-hashtag input-icon"></i>
+                            </div>
+                            {% if form.number_of_birds.errors %}
+                            <div class="form-error">
+                                {% for error in form.number_of_birds.errors %}
+                                    <small><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-helper">Total count of birds in this block</div>
+                        </div>
+
+                        <!-- Breed Selection -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.breed.id_for_label }}" class="form-label">
+                                <i class="fas fa-dna me-2"></i>Breed
+                            </label>
+                            <div class="input-with-icon">
+                                {{ form.breed }}
+                                <i class="fas fa-chevron-down input-icon"></i>
+                            </div>
+                            {% if form.breed.errors %}
+                            <div class="form-error">
+                                {% for error in form.breed.errors %}
+                                    <small><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-helper">Select the primary breed of your poultry</div>
+                        </div>
+
+                        <!-- Age Group -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.age_group.id_for_label }}" class="form-label">
+                                <i class="fas fa-calendar-alt me-2"></i>Age Group
+                            </label>
+                            <div class="input-with-icon">
+                                {{ form.age_group }}
+                                <i class="fas fa-chevron-down input-icon"></i>
+                            </div>
+                            {% if form.age_group.errors %}
+                            <div class="form-error">
+                                {% for error in form.age_group.errors %}
+                                    <small><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-helper">Select the age category of your birds</div>
+                        </div>
+
+
+                        <!-- Form Actions -->
+                        <div class="form-actions mt-5">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <a href="{% url 'flock:detail' block_id %}" class="pg-btn pg-btn-ghost">
+                                        <i class="fas fa-times me-2"></i>Cancel
+                                    </a>
+                                </div>
+                                <div class="col-md-6 text-md-end">
+                                    <button type="submit" class="pg-btn pg-btn-primary">
+                                        <i class="fas fa-save me-2"></i>Save Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Sidebar - Current Configuration -->
+            <div class="col-lg-4">
+                <div class="configuration-sidebar">
+                    <!-- Current Configuration Card -->
+                    <div class="config-card">
+                        <div class="card-header">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Live Preview
+                        </div>
+                        <div class="card-body">
+                            <div class="config-item">
+                                <div class="config-label">Block Name</div>
+                                <div class="config-value" id="preview-name">{{ block.name }}</div>
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Number of Birds</div>
+                                <div class="config-value" id="preview-number_of_birds">{{ block.number_of_birds }}</div>
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Breed</div>
+                                <div class="config-value" id="preview-breed">{{ breed_display }}</div>
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Age Group</div>
+                                <div class="config-value" id="preview-age_group">{{ age_group_display }}</div>
+                            </div>
+                        
+                        </div>
+                    </div>
+
+                    <!-- Tips -->
+                    <div class="tips-card mt-4">
+                        <div class="card-header">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            Update Tips
+                        </div>
+                        <div class="card-body">
+                            <div class="tip-item">
+                                <div class="tip-icon">
+                                    <i class="fas fa-thermometer-half"></i>
+                                </div>
+                                <div class="tip-content">
+                                    <h6>Temperature Settings</h6>
+                                    <p>Different age groups may require different temperature monitoring thresholds.</p>
+                                </div>
+                            </div>
+                            <div class="tip-item">
+                                <div class="tip-icon">
+                                    <i class="fas fa-utensils"></i>
+                                </div>
+                                <div class="tip-content">
+                                    <h6>Feeding Patterns</h6>
+                                    <p>Breed and age affect optimal feeding schedules and quantities.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<style>
+    /* Update Page Styles */
+    .update-header {
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(27,94,32,0.08);
+    }
+
+    .header-content h1 {
+        font-size: 2rem;
+        font-weight: 700;
+    }
+
+    /* Update Card */
+    .update-card {
+        background: var(--pg-surface);
+        border-radius: var(--pg-radius-lg);
+        border: 1px solid rgba(27,94,32,0.08);
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(27,94,32,0.05);
+    }
+
+    /* Form Header */
+    .form-header {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .form-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, rgba(27,94,32,0.1) 0%, rgba(27,94,32,0.05) 100%);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--pg-forest-green);
+        font-size: 1.75rem;
+        flex-shrink: 0;
+    }
+
+    .form-title h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--pg-text-primary);
+        margin-bottom: 0.25rem;
+    }
+
+    .form-title p {
+        margin: 0;
+        color: var(--pg-text-tertiary);
+    }
+
+    /* Simulation Alert */
+    .simulation-alert {
+        background: rgba(255, 193, 7, 0.1);
+        border: 1px solid rgba(255, 193, 7, 0.2);
+        border-radius: var(--pg-radius);
+        padding: 1rem 1.25rem;
+    }
+
+    .simulation-alert i {
+        color: var(--pg-warm-yellow);
+    }
+
+    /* Form Styles */
+    .form-group {
+        position: relative;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: var(--pg-text-primary);
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .form-label i {
+        color: var(--pg-forest-green);
+        width: 16px;
+    }
+
+    .input-with-icon {
+        position: relative;
+    }
+
+    .input-with-icon .input-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--pg-text-tertiary);
+        font-size: 1rem;
+        pointer-events: none;
+    }
+
+    .input-with-icon select,
+    .input-with-icon input[type="text"],
+    .input-with-icon input[type="number"] {
+        padding-left: 45px !important;
+        width: 100%;
+    }
+
+    /* Form Elements */
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 1px solid rgba(27,94,32,0.15);
+        border-radius: var(--pg-radius);
+        background: var(--pg-surface);
+        color: var(--pg-text-primary);
+        font-size: 1rem;
+        transition: all 0.3s var(--pg-ease);
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    select:focus,
+    textarea:focus {
+        outline: none;
+        border-color: var(--pg-forest-green);
+        box-shadow: 0 0 0 3px rgba(27,94,32,0.1);
+    }
+
+    input[type="text"]:hover,
+    input[type="number"]:hover,
+    select:hover,
+    textarea:hover {
+        border-color: rgba(27,94,32,0.3);
+    }
+
+    select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%231B5E20' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 1.25rem;
+        padding-right: 2.5rem;
+    }
+
+    textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .form-helper {
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+        color: var(--pg-text-tertiary);
+    }
+
+    .form-error {
+        margin-top: 0.5rem;
+    }
+
+    .form-error small {
+        color: var(--pg-rust-orange);
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    /* Form Actions */
+    .form-actions {
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(27,94,32,0.08);
+    }
+
+    /* Sidebar */
+    .configuration-sidebar {
+        position: sticky;
+        top: 1rem;
+    }
+
+    .config-card,
+    .quick-actions,
+    .tips-card {
+        background: var(--pg-surface);
+        border-radius: var(--pg-radius);
+        border: 1px solid rgba(27,94,32,0.08);
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: rgba(27,94,32,0.05);
+        padding: 1rem 1.25rem;
+        font-weight: 600;
+        color: var(--pg-forest-green);
+        border-bottom: 1px solid rgba(27,94,32,0.08);
+        display: flex;
+        align-items: center;
+    }
+
+    .card-body {
+        padding: 1.25rem;
+    }
+
+    /* Configuration Items */
+    .config-item {
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(27,94,32,0.03);
+    }
+
+    .config-item:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+
+    .config-label {
+        font-size: 0.85rem;
+        color: var(--pg-text-tertiary);
+        margin-bottom: 0.25rem;
+    }
+
+    .config-value {
+        font-weight: 600;
+        color: var(--pg-text-primary);
+        font-size: 1rem;
+        transition: color 0.3s ease;
+    }
+
+    .config-value.updating {
+        color: var(--pg-forest-green);
+        font-style: italic;
+    }
+
+    /* Quick Actions */
+    .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .action-btn {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        background: rgba(27,94,32,0.05);
+        border: 1px solid rgba(27,94,32,0.08);
+        border-radius: var(--pg-radius);
+        color: var(--pg-text-primary);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s var(--pg-ease);
+    }
+
+    .action-btn:hover {
+        background: rgba(27,94,32,0.08);
+        border-color: rgba(27,94,32,0.15);
+        transform: translateX(5px);
+    }
+
+    .action-btn i {
+        color: var(--pg-forest-green);
+        width: 16px;
+    }
+
+    /* Tips */
+    .tip-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .tip-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .tip-icon {
+        width: 40px;
+        height: 40px;
+        background: rgba(27,94,32,0.08);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--pg-forest-green);
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .tip-content h6 {
+        font-size: 0.95rem;
+        color: var(--pg-text-primary);
+        margin-bottom: 0.25rem;
+    }
+
+    .tip-content p {
+        font-size: 0.85rem;
+        color: var(--pg-text-tertiary);
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 992px) {
+        .update-card {
+            padding: 1.5rem;
+        }
+
+        .form-header {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+        }
+
+        .form-icon {
+            margin: 0 auto;
+        }
+
+        .configuration-sidebar {
+            margin-top: 2rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .header-content h1 {
+            font-size: 1.75rem;
+        }
+
+        .update-card {
+            padding: 1.25rem;
+        }
+
+        .form-actions .row {
+            flex-direction: column-reverse;
+            gap: 1rem;
+        }
+
+        .form-actions .col-md-6 {
+            width: 100%;
+        }
+
+        .form-actions .text-md-end {
+            text-align: left;
+        }
+
+        .action-buttons {
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            flex: 1;
+            min-width: calc(50% - 0.375rem);
+            justify-content: center;
+            text-align: center;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .header-content h1 {
+            font-size: 1.5rem;
+        }
+
+        .form-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+        }
+
+        .form-title h3 {
+            font-size: 1.25rem;
+        }
+
+        .input-with-icon select,
+        .input-with-icon input[type="text"],
+        .input-with-icon input[type="number"] {
+            padding-left: 40px !important;
+        }
+
+        .input-with-icon .input-icon {
+            left: 12px;
+            font-size: 0.9rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .action-btn {
+            min-width: 100%;
+        }
+    }
+
+    @media (max-width: 375px) {
+        .update-card {
+            padding: 1rem;
+        }
+
+        .form-title h3 {
+            font-size: 1.1rem;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            padding: 0.75rem 0.875rem;
+            font-size: 0.95rem;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-focus first field
+        const firstInput = document.querySelector('input[type="text"], input[type="number"], select');
+        if (firstInput) {
+            setTimeout(() => {
+                firstInput.focus();
+            }, 300);
+        }
+
+        // Get form elements
+        const nameField = document.getElementById('{{ form.name.id_for_label }}');
+        const birdsField = document.getElementById('{{ form.number_of_birds.id_for_label }}');
+        const breedField = document.getElementById('{{ form.breed.id_for_label }}');
+        const ageGroupField = document.getElementById('{{ form.age_group.id_for_label }}');
+        const notesField = document.getElementById('{{ form.notes.id_for_label }}');
+
+        // Get preview elements
+        const previewName = document.getElementById('preview-name');
+        const previewBirds = document.getElementById('preview-number_of_birds');
+        const previewBreed = document.getElementById('preview-breed');
+        const previewAgeGroup = document.getElementById('preview-age_group');
+        const previewUpdated = document.getElementById('preview-updated');
+        const currentBlockName = document.getElementById('current-block-name');
+
+        // Breed display mapping (update this with your actual breed choices)
+        const breedOptions = {
+            'broiler': 'Broiler',
+            'layer': 'Layer',
+            'dual_purpose': 'Dual Purpose',
+            'heritage': 'Heritage Breed',
+            'other': 'Other'
+        };
+
+        // Age group display mapping (update this with your actual age groups)
+        const ageGroupOptions = {
+            'chick': 'Chick (0-4 weeks)',
+            'grower': 'Grower (5-8 weeks)',
+            'finisher': 'Finisher (9+ weeks)',
+            'adult': 'Adult',
+            'senior': 'Senior'
+        };
+
+        // Function to update preview with animation
+        function updatePreview(element, value) {
+            if (element && value !== undefined) {
+                element.classList.add('updating');
+                element.textContent = value || 'Not set';
+                setTimeout(() => {
+                    element.classList.remove('updating');
+                }, 500);
+            }
+        }
+
+        // Real-time updates for name field
+        if (nameField) {
+            nameField.addEventListener('input', function() {
+                updatePreview(previewName, this.value);
+                if (currentBlockName) {
+                    currentBlockName.textContent = this.value || '{{ block.name }}';
+                }
+            });
+        }
+
+        // Real-time updates for number of birds
+        if (birdsField) {
+            birdsField.addEventListener('input', function() {
+                updatePreview(previewBirds, this.value);
+            });
+        }
+
+        // Real-time updates for breed field
+        if (breedField) {
+            breedField.addEventListener('change', function() {
+                const selectedValue = this.value;
+                const displayText = breedOptions[selectedValue] || selectedValue;
+                updatePreview(previewBreed, displayText);
+            });
+        }
+
+        // Real-time updates for age group field
+        if (ageGroupField) {
+            ageGroupField.addEventListener('change', function() {
+                const selectedValue = this.value;
+                const displayText = ageGroupOptions[selectedValue] || selectedValue;
+                updatePreview(previewAgeGroup, displayText);
+            });
+        }
+
+        // Update last updated time
+        function updateLastUpdated() {
+            const now = new Date();
+            const formattedDate = now.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
+            const previewUpdated = document.getElementById('preview-updated');
+            if (previewUpdated) {
+                updatePreview(previewUpdated, formattedDate);
+            }
+        }
+        // Update last updated when any field changes
+        const formFields = [nameField, birdsField, breedField, ageGroupField, notesField];
+        formFields.forEach(field => {
+            if (field) {
+                field.addEventListener('input', updateLastUpdated);
+                field.addEventListener('change', updateLastUpdated);
+            }
+        });
+
+        // Number of birds validation
+        if (birdsField) {
+            birdsField.addEventListener('input', function() {
+                const value = parseInt(this.value);
+                if (value < 1) {
+                    this.style.borderColor = 'var(--pg-rust-orange)';
+                } else if (value > 10000) {
+                    this.style.borderColor = 'var(--pg-warning)';
+                } else {
+                    this.style.borderColor = '';
+                }
+            });
+        }
+
+        // Form submission enhancement
+        const updateForm = document.getElementById('updateForm');
+        if (updateForm) {
+            updateForm.addEventListener('submit', function(e) {
+                const submitBtn = this.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+                    submitBtn.disabled = true;
+                    
+                    // Update all previews one last time before submit
+                    if (nameField) updatePreview(previewName, nameField.value);
+                    if (birdsField) updatePreview(previewBirds, birdsField.value);
+                    if (breedField) {
+                        const breedValue = breedField.value;
+                        const breedDisplay = breedOptions[breedValue] || breedValue;
+                        updatePreview(previewBreed, breedDisplay);
+                    }
+                    if (ageGroupField) {
+                        const ageGroupValue = ageGroupField.value;
+                        const ageGroupDisplay = ageGroupOptions[ageGroupValue] || ageGroupValue;
+                        updatePreview(previewAgeGroup, ageGroupDisplay);
+                    }
+                    updateLastUpdated();
+                }
+            });
+        }
+
+        // Show character count for notes
+        if (notesField) {
+            const charCount = document.createElement('div');
+            charCount.className = 'char-count pg-small pg-muted mt-1';
+            charCount.innerHTML = 'Characters: <span>0</span>';
+            notesField.parentNode.insertBefore(charCount, notesField.nextSibling);
+
+            notesField.addEventListener('input', function() {
+                const count = this.value.length;
+                charCount.querySelector('span').textContent = count;
+                
+                if (count > 500) {
+                    charCount.style.color = 'var(--pg-rust-orange)';
+                } else {
+                    charCount.style.color = 'var(--pg-text-tertiary)';
+                }
+            });
+
+            // Trigger initial count
+            notesField.dispatchEvent(new Event('input'));
+        }
+
+        // Initialize previews with current form values
+        function initializePreviews() {
+            if (nameField && nameField.value) {
+                updatePreview(previewName, nameField.value);
+            }
+            if (birdsField && birdsField.value) {
+                updatePreview(previewBirds, birdsField.value);
+            }
+            if (breedField && breedField.value) {
+                const breedValue = breedField.value;
+                const breedDisplay = breedOptions[breedValue] || breedValue;
+                updatePreview(previewBreed, breedDisplay);
+            }
+            if (ageGroupField && ageGroupField.value) {
+                const ageGroupValue = ageGroupField.value;
+                const ageGroupDisplay = ageGroupOptions[ageGroupValue] || ageGroupValue;
+                updatePreview(previewAgeGroup, ageGroupDisplay);
+            }
+        }
+
+        // Initialize on page load
+        initializePreviews();
+    });
+</script>
+
+<script>
+function goBack() {
+    // Method 1: Simple back navigation
+    window.history.back();
+    
+    // OR Method 2: With fallback to home/default URL
+    // if (document.referrer) {
+    //     window.history.back();
+    // } else {
+    //     window.location.href = "{% url 'flock:detail' block_id %}"; // Fallback URL
+    // }
+}
+</script>   
+{% endblock %}

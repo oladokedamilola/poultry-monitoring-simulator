@@ -1,0 +1,631 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+{% block title %}Historical Data{% endblock %}
+
+{% block content %}
+<div class="container-wide py-4">
+    
+    <!-- Page Header -->
+    <div class="history-header mb-5">
+        <h2 style="color:var(--pg-forest-green)" class="mb-2">Historical Data Analysis</h2>
+        <p class="pg-muted">Select a poultry block to explore trends, patterns, and insights from past monitoring data</p>
+    </div>
+
+    {% if blocks %}
+        <!-- Stats Summary -->
+        <div class="history-stats mb-5">
+            <div class="pg-card">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="stat-item">
+                            <div class="stat-value">{{ blocks|length }}</div>
+                            <div class="stat-label">Active Blocks</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-item">
+                            <div class="stat-value">{{ total_readings|default:"0" }}</div>
+                            <div class="stat-label">Total Readings</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-item">
+                            <div class="stat-value">{{ avg_readings_per_block|default:"0" }}</div>
+                            <div class="stat-label">Avg. Readings/Block</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-item">
+                            <div class="stat-value">{{ data_coverage|default:"0" }}%</div>
+                            <div class="stat-label">Data Coverage</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blocks Grid -->
+        <div class="history-grid">
+            <h4 class="mb-4" style="color:var(--pg-text-primary)">Your Poultry Blocks</h4>
+            
+            <div class="row g-4">
+                {% for block in blocks %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="history-block-card">
+                        <!-- Block Header -->
+                        <div class="block-header">
+                            <div class="block-icon">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <div class="block-info">
+                                <h4 class="block-name">{{ block.name }}</h4>
+                                <div class="block-subtitle">
+                                    <span class="breed-badge">{{ block.get_breed_display }}</span>
+                                    <span class="age-badge">{{ block.get_age_group_display }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Block Stats -->
+                        <div class="block-stats">
+                            <div class="stat-row">
+                                <div class="stat-label">
+                                    <i class="fas fa-dove"></i>
+                                    Birds
+                                </div>
+                                <div class="stat-value">{{ block.number_of_birds }}</div>
+                            </div>
+                            
+                            <div class="stat-row">
+                                <div class="stat-label">
+                                    <i class="fas fa-history"></i>
+                                    Last Updated
+                                </div>
+                                <div class="stat-value">{{ block.updated_at|date:"M d, Y"|default:"Never" }}</div>
+                            </div>
+                        
+                        </div>
+                        <!-- Action Button - Only Analyze History -->
+                        <div class="block-actions">
+                            <a href="{% url 'history_detail' block.id %}" class="history-btn">
+                                <i class="fas fa-chart-line me-2"></i>
+                                Analyze History
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Historical Insights -->
+        <div class="historical-insights mt-5">
+            <div class="pg-card">
+                <div class="card-title">
+                    <i class="fas fa-lightbulb me-2" style="color:var(--pg-warm-yellow)"></i>
+                    Benefits of Historical Analysis
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="insight-item">
+                            <div class="insight-icon trend">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h6>Identify Trends</h6>
+                            <p class="pg-muted">Spot patterns in temperature, humidity, and bird behavior over time.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="insight-item">
+                            <div class="insight-icon optimize">
+                                <i class="fas fa-cogs"></i>
+                            </div>
+                            <h6>Optimize Operations</h6>
+                            <p class="pg-muted">Use data to improve feeding schedules and environmental controls.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="insight-item">
+                            <div class="insight-icon predict">
+                                <i class="fas fa-crystal-ball"></i>
+                            </div>
+                            <h6>Predict Issues</h6>
+                            <p class="pg-muted">Anticipate problems before they affect poultry health.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <!-- Empty State -->
+        <div class="empty-history-state text-center py-5">
+            <div class="empty-illustration mb-4">
+                <i class="fas fa-chart-bar"></i>
+            </div>
+            <h3 class="mb-3" style="color:var(--pg-forest-green)">No Data to Analyze</h3>
+            <p class="pg-muted mb-4">Start monitoring your poultry blocks to build historical data for analysis</p>
+            
+            <div class="empty-actions">
+                <a href="{% url 'flock:create' %}" class="pg-btn pg-btn-primary">
+                    <i class="fas fa-plus me-2"></i>Create a Block
+                </a>
+            </div>
+
+            <!-- Data Value Proposition -->
+            <div class="data-value mt-5">
+                <h5 class="mb-4">Why Historical Data Matters</h5>
+                <div class="value-points">
+                    <div class="value-point">
+                        <div class="point-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="point-content">
+                            <h6>Track Performance</h6>
+                            <p>Monitor how environmental changes affect your flock over time.</p>
+                        </div>
+                    </div>
+                    <div class="value-point">
+                        <div class="point-icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <div class="point-content">
+                            <h6>Improve Alerts</h6>
+                            <p>Use historical patterns to set more accurate alert thresholds.</p>
+                        </div>
+                    </div>
+                    <div class="value-point">
+                        <div class="point-icon">
+                            <i class="fas fa-clipboard-check"></i>
+                        </div>
+                        <div class="point-content">
+                            <h6>Make Data-Driven Decisions</h6>
+                            <p>Base management decisions on actual historical performance data.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+
+<style>
+    /* History Header */
+    .history-header {
+        text-align: center;
+        padding: 1rem 0;
+    }
+
+    .history-header h2 {
+        font-size: 2.2rem;
+        font-weight: 700;
+    }
+
+    .history-header p {
+        font-size: 1.1rem;
+        max-width: 700px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+
+    /* Stats Summary */
+    .history-stats .pg-card {
+        padding: 1.5rem;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 0.5rem;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--pg-forest-green);
+        line-height: 1;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: var(--pg-text-tertiary);
+        font-weight: 500;
+    }
+
+    /* Block Cards */
+    .history-block-card {
+        background: var(--pg-surface);
+        border-radius: var(--pg-radius-lg);
+        border: 1px solid rgba(27,94,32,0.08);
+        padding: 1.5rem;
+        height: 100%;
+        transition: all 0.3s var(--pg-ease);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .history-block-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--pg-shadow);
+        border-color: rgba(27,94,32,0.15);
+    }
+
+    .block-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .block-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, rgba(27,94,32,0.1) 0%, rgba(27,94,32,0.05) 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--pg-forest-green);
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .block-info {
+        flex: 1;
+    }
+
+    .block-name {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--pg-text-primary);
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
+    }
+
+    .block-subtitle {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .breed-badge, .age-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .breed-badge {
+        background: rgba(27,94,32,0.1);
+        color: var(--pg-forest-green);
+    }
+
+    .age-badge {
+        background: rgba(255,193,7,0.1);
+        color: var(--pg-warm-yellow);
+    }
+
+    /* Block Stats */
+    .block-stats {
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: rgba(27,94,32,0.02);
+        border-radius: var(--pg-radius);
+        border: 1px solid rgba(27,94,32,0.03);
+    }
+
+    .stat-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+    }
+
+    .stat-row:not(:last-child) {
+        border-bottom: 1px solid rgba(27,94,32,0.03);
+    }
+
+    .stat-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--pg-text-secondary);
+        font-size: 0.85rem;
+    }
+
+    .stat-label i {
+        color: var(--pg-forest-green);
+        width: 14px;
+    }
+
+    .stat-value {
+        font-weight: 600;
+        color: var(--pg-text-primary);
+        font-size: 0.95rem;
+    }
+
+    /* Data Preview */
+    .data-preview {
+        margin-bottom: 1.5rem;
+    }
+
+    .preview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .preview-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--pg-text-secondary);
+    }
+
+    .trend-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.25rem 0.5rem;
+        border-radius: 999px;
+    }
+
+    .trend-indicator.positive {
+        background: rgba(46,125,50,0.1);
+        color: var(--pg-success);
+    }
+
+    .no-data-preview {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 60px;
+        background: rgba(27,94,32,0.02);
+        border-radius: var(--pg-radius-sm);
+        color: var(--pg-text-tertiary);
+        gap: 0.5rem;
+    }
+
+    .no-data-preview i {
+        font-size: 1.5rem;
+        opacity: 0.5;
+    }
+
+    .no-data-preview span {
+        font-size: 0.85rem;
+    }
+
+    /* Action Button */
+    .block-actions {
+        margin-top: auto;
+    }
+
+    .history-btn {
+        display: block;
+        width: 100%;
+        padding: 0.75rem;
+        background: linear-gradient(135deg, var(--pg-forest-green) 0%, #1a511f 100%);
+        color: white;
+        border: none;
+        border-radius: var(--pg-radius);
+        font-weight: 600;
+        text-align: center;
+        text-decoration: none;
+        transition: all 0.3s var(--pg-ease);
+        font-size: 0.95rem;
+    }
+
+    .history-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(27,94,32,0.2);
+        color: white;
+    }
+
+    /* Historical Insights */
+    .historical-insights .pg-card {
+        padding: 2rem;
+    }
+
+    .insight-item {
+        text-align: center;
+        padding: 1rem;
+    }
+
+    .insight-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+    }
+
+    .insight-icon.trend {
+        background: rgba(27,94,32,0.1);
+        color: var(--pg-forest-green);
+    }
+
+    .insight-icon.optimize {
+        background: rgba(255,193,7,0.1);
+        color: var(--pg-warm-yellow);
+    }
+
+    .insight-icon.predict {
+        background: rgba(216,67,21,0.1);
+        color: var(--pg-rust-orange);
+    }
+
+    .insight-item h6 {
+        font-size: 1rem;
+        color: var(--pg-text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .insight-item p {
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    /* Empty State */
+    .empty-history-state {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .empty-illustration {
+        font-size: 4rem;
+        color: rgba(27,94,32,0.2);
+        margin-bottom: 2rem;
+    }
+
+    .empty-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+
+    /* Data Value Proposition */
+    .data-value {
+        background: rgba(27,94,32,0.03);
+        border-radius: var(--pg-radius);
+        padding: 2rem;
+        margin-top: 2rem;
+    }
+
+    .data-value h5 {
+        text-align: center;
+        color: var(--pg-forest-green);
+        font-size: 1.3rem;
+    }
+
+    .value-points {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .value-point {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .point-icon {
+        width: 40px;
+        height: 40px;
+        background: rgba(27,94,32,0.1);
+        color: var(--pg-forest-green);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .point-content h6 {
+        font-size: 1rem;
+        color: var(--pg-text-primary);
+        margin-bottom: 0.25rem;
+    }
+
+    .point-content p {
+        font-size: 0.9rem;
+        color: var(--pg-text-tertiary);
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .history-header h2 {
+            font-size: 1.8rem;
+        }
+
+        .history-header p {
+            font-size: 1rem;
+        }
+
+        .history-stats .row {
+            gap: 1rem;
+        }
+
+        .stat-item {
+            flex: 1;
+            min-width: calc(50% - 0.5rem);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+        }
+
+        .empty-actions {
+            flex-direction: column;
+        }
+
+        .empty-actions .pg-btn {
+            width: 100%;
+        }
+
+        .value-points {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .history-block-card {
+            padding: 1.25rem;
+        }
+
+        .block-header {
+            flex-direction: column;
+            text-align: center;
+            gap: 0.75rem;
+        }
+
+        .block-icon {
+            margin: 0 auto;
+        }
+
+        .block-subtitle {
+            justify-content: center;
+        }
+
+        .historical-insights .pg-card {
+            padding: 1.5rem;
+        }
+
+        .data-value {
+            padding: 1.5rem;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Simple hover effect for cards
+        const cards = document.querySelectorAll('.history-block-card');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+                this.style.boxShadow = 'var(--pg-shadow)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = 'none';
+            });
+        });
+    });
+</script>
+{% endblock %}

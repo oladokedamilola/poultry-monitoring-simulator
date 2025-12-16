@@ -1,0 +1,39 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Flock Setup{% endblock %}
+{% block content %}
+
+<h3 class="fw-bold mb-3" style="color: var(--pg-forest-green);">
+    Configure Your Flock
+</h3>
+
+<p class="pg-muted mb-4">
+    Set up your poultry flock details to personalize the live simulation environment.
+</p>
+
+<form method="POST" class="pg-card p-4" style="max-width:500px;">
+    {% csrf_token %}
+
+    <label class="pg-small">Number of Birds</label>
+    <input type="number" name="number_of_birds" class="pg-input mb-3"
+           value="{{ profile.number_of_birds }}" min="1" required>
+
+    <label class="pg-small">Breed</label>
+    <select name="breed" class="pg-input mb-3" required>
+        {% for key, value in profile.BREED_CHOICES %}
+            <option value="{{ key }}" {% if profile.breed == key %}selected{% endif %}>{{ value }}</option>
+        {% endfor %}
+    </select>
+
+    <label class="pg-small">Age Group</label>
+    <select name="age_group" class="pg-input mb-4" required>
+        {% for key, value in profile.AGE_GROUP_CHOICES %}
+            <option value="{{ key }}" {% if profile.age_group == key %}selected{% endif %}>{{ value }}</option>
+        {% endfor %}
+    </select>
+
+    <button type="submit" class="pg-btn pg-btn-primary w-100">
+        Save & Continue to Simulation
+    </button>
+</form>
+
+{% endblock %}

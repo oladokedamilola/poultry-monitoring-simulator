@@ -1,0 +1,1012 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-wide">
+  <!-- DEBUG: Check what data is available -->
+<div style="display: none;">
+  Blocks exist: {{ blocks_exist }}
+  Block data length: {{ block_data|length }}
+  User: {{ user.username }}
+</div>
+
+  <!-- Always show greeting -->
+  <div class="welcome-header mb-4">
+    <h1 class="greeting-title" id="greetingText"></h1>
+    <p class="greeting-subtitle">
+      Welcome to PoultraGuard! Your smart poultry monitoring dashboard.
+    </p>
+  </div>
+
+  {% if blocks_exist %}
+    <!-- Dashboard with blocks -->
+    <div class="dashboard-header">
+      <h3 style="color:var(--pg-forest-green)" class="mb-2">Dashboard Overview</h3>
+      <div class="pg-small pg-muted mb-4">
+        Monitor all your poultry blocks at a glance
+      </div>
+    </div>
+
+    {% for item in block_data %}
+      <div class="pg-card mb-5">
+        <div class="block-header">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <h4 style="color:var(--pg-forest-green)" class="mb-1">{{ item.block.name }}</h4>
+              <div class="block-meta pg-small pg-muted">
+                <span class="me-3"><i class="fas fa-dove me-1"></i>{{ item.block.number_of_birds }} birds</span>
+                <span class="me-3"><i class="fas fa-dna me-1"></i>{{ item.block.get_breed_display }}</span>
+                <span><i class="fas fa-calendar-alt me-1"></i>{{ item.block.get_age_group_display }}</span>
+              </div>
+            </div>
+            <div class="status-badge">
+              {% if item.latest %}
+                <span class="badge bg-success">
+                  <i class="fas fa-circle me-1"></i>Active
+                </span>
+              {% else %}
+                <span class="badge bg-warning">
+                  <i class="fas fa-exclamation-circle me-1"></i>No Data
+                </span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        {% if item.latest %}
+          <!-- Data available - show metrics -->
+          <div class="row g-4 mt-3">
+            <!-- Temperature Card -->
+            <div class="col-md-6 col-xl-2">
+              <div class="metric-card">
+                <div class="metric-icon temp">
+                  <i class="fas fa-thermometer-half"></i>
+                </div>
+                <div class="metric-value">
+                  {{ item.latest.temperature|floatformat:1 }}°C
+                </div>
+                <div class="metric-label">Temperature</div>
+                <div class="metric-status">
+                  {% if item.latest.temperature >= 28 and item.latest.temperature <= 34 %}
+                    <span class="status-good"><i class="fas fa-check-circle me-1"></i>Optimal</span>
+                  {% elif item.latest.temperature < 28 %}
+                    <span class="status-warning"><i class="fas fa-exclamation-circle me-1"></i>Low</span>
+                  {% else %}
+                    <span class="status-danger"><i class="fas fa-exclamation-triangle me-1"></i>High</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Humidity Card -->
+            <div class="col-md-6 col-xl-2">
+              <div class="metric-card">
+                <div class="metric-icon humidity">
+                  <i class="fas fa-tint"></i>
+                </div>
+                <div class="metric-value">
+                  {{ item.latest.humidity|floatformat:1 }}%
+                </div>
+                <div class="metric-label">Humidity</div>
+                <div class="metric-status">
+                  {% if item.latest.humidity >= 50 and item.latest.humidity <= 85 %}
+                    <span class="status-good"><i class="fas fa-check-circle me-1"></i>Optimal</span>
+                  {% elif item.latest.humidity < 50 %}
+                    <span class="status-warning"><i class="fas fa-exclamation-circle me-1"></i>Low</span>
+                  {% else %}
+                    <span class="status-danger"><i class="fas fa-exclamation-triangle me-1"></i>High</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Ammonia Card -->
+            <div class="col-md-6 col-xl-2">
+              <div class="metric-card">
+                <div class="metric-icon ammonia">
+                  <i class="fas fa-wind"></i>
+                </div>
+                <div class="metric-value">
+                  {{ item.latest.ammonia|floatformat:1 }} ppm
+                </div>
+                <div class="metric-label">Ammonia</div>
+                <div class="metric-status">
+                  {% if item.latest.ammonia <= 25 %}
+                    <span class="status-good"><i class="fas fa-check-circle me-1"></i>Safe</span>
+                  {% else %}
+                    <span class="status-danger"><i class="fas fa-exclamation-triangle me-1"></i>Critical</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Feed Level Card -->
+            <div class="col-md-6 col-xl-2">
+              <div class="metric-card">
+                <div class="metric-icon feed">
+                  <i class="fas fa-utensils"></i>
+                </div>
+                <div class="metric-value">
+                  {{ item.latest.feed_level|floatformat:1 }}%
+                </div>
+                <div class="metric-label">Feed Level</div>
+                <div class="metric-status">
+                  {% if item.latest.feed_level >= 20 %}
+                    <span class="status-good"><i class="fas fa-check-circle me-1"></i>Sufficient</span>
+                  {% else %}
+                    <span class="status-warning"><i class="fas fa-exclamation-circle me-1"></i>Low</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Water Level Card -->
+            <div class="col-md-6 col-xl-2">
+              <div class="metric-card">
+                <div class="metric-icon water">
+                  <i class="fas fa-tint"></i>
+                </div>
+                <div class="metric-value">
+                  {{ item.latest.water_level|floatformat:1 }}%
+                </div>
+                <div class="metric-label">Water Level</div>
+                <div class="metric-status">
+                  {% if item.latest.water_level >= 20 %}
+                    <span class="status-good"><i class="fas fa-check-circle me-1"></i>Sufficient</span>
+                  {% else %}
+                    <span class="status-warning"><i class="fas fa-exclamation-circle me-1"></i>Low</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Activity Level Card -->
+            <div class="col-md-6 col-xl-2">
+              <div class="metric-card">
+                <div class="metric-icon activity">
+                  <i class="fas fa-running"></i>
+                </div>
+                <div class="metric-value">
+                  {{ item.latest.activity_level|floatformat:1 }}%
+                </div>
+                <div class="metric-label">Activity</div>
+                <div class="metric-status">
+                  {% if item.latest.activity_level >= 30 %}
+                    <span class="status-good"><i class="fas fa-check-circle me-1"></i>Normal</span>
+                  {% else %}
+                    <span class="status-warning"><i class="fas fa-exclamation-circle me-1"></i>Low</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chart Section -->
+          <div class="row mt-4">
+            <div class="col-12">
+              <div class="chart-container-small">
+                <canvas id="chart-{{ item.block.id }}"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Last Updated & Actions -->
+          <div class="row mt-3">
+            <div class="col-md-8">
+              <div class="pg-small pg-muted">
+                <i class="fas fa-clock me-1"></i>
+                Last updated: {{ item.latest.timestamp|date:"M d, Y H:i" }}
+              </div>
+            </div>
+            <div class="col-md-4 text-md-end">
+              <a href="{% url 'history_detail' item.block.id %}" class="pg-btn pg-btn-ghost pg-btn-sm">
+                <i class="fas fa-chart-line me-1"></i>View History
+              </a>
+              <a href="{% url 'start_sim' item.block.id %}" class="pg-btn pg-btn-primary pg-btn-sm ms-2">
+                <i class="fas fa-play me-1"></i>Start Simulation
+              </a>
+            </div>
+          </div>
+        {% else %}
+          <!-- No data available -->
+          <div class="no-data-state py-4 text-center">
+            <div class="no-data-icon mb-3">
+              <i class="fas fa-chart-line" style="font-size: 3rem; color: var(--pg-cool-gray);"></i>
+            </div>
+            <h5 class="mb-2" style="color: var(--pg-text-secondary);">No Monitoring Data Yet</h5>
+            <p class="pg-muted mb-4">Start the simulation to begin monitoring this flock block</p>
+            <a href="{% url 'start_simulation' item.block.id %}" class="pg-btn pg-btn-primary">
+              <i class="fas fa-play me-2"></i>Start Simulation
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    <!-- Add New Block Button -->
+    <div class="text-center mb-5">
+      <a href="{% url 'flock:create' %}" class="pg-btn pg-btn-ghost">
+        <i class="fas fa-plus-circle me-2"></i>Add Another Flock Block
+      </a>
+    </div>
+
+  {% else %}
+    <!-- Empty State Dashboard (when no blocks exist) -->
+    <!-- Keep all your existing empty state content here -->
+    <div class="empty-dashboard">
+      
+
+      <!-- 7. Visual Element - Empty State Illustration -->
+      <div class="empty-state-illustration mb-5 text-center">
+        <div class="illustration-container">
+          <i class="fas fa-kiwi-bird illustration-icon"></i>
+          <div class="illustration-dots">
+            <span class="dot dot-1"></span>
+            <span class="dot dot-2"></span>
+            <span class="dot dot-3"></span>
+          </div>
+        </div>
+        <h3 class="mt-4" style="color:var(--pg-forest-green)">Your monitoring dashboard is empty</h3>
+        <p class="pg-muted">Start by creating your first poultry block to begin monitoring</p>
+      </div>
+
+      <!-- 1. Onboarding Section -->
+      <div class="onboarding-section mb-5">
+        <h4 class="mb-4" style="color:var(--pg-forest-green)">Getting Started with PoultraGuard</h4>
+        
+        <div class="onboarding-steps">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h5>Create Your Flock</h5>
+              <p class="pg-muted">Define your poultry block with details like breed, age, and number of birds.</p>
+            </div>
+          </div>
+          
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h5>Start Simulation</h5>
+              <p class="pg-muted">Launch the virtual sensor simulation to generate realistic monitoring data.</p>
+            </div>
+          </div>
+          
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h5>Monitor & Analyze</h5>
+              <p class="pg-muted">Track temperature, humidity, ammonia levels, and bird activity in real-time.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Quick Start Cards -->
+      <div class="quick-start-section mb-5">
+        <h4 class="mb-4" style="color:var(--pg-forest-green)">Quick Start Options</h4>
+        
+        <div class="row g-4">
+          <div class="col-md-6">
+            <div class="quick-start-card primary">
+              <div class="card-icon">
+                <i class="fas fa-plus-circle"></i>
+              </div>
+              <div class="card-content">
+                <h5>Create Your First Flock</h5>
+                <p class="pg-muted">Set up a new poultry block with your specific requirements.</p>
+                <a href="{% url 'flock:create' %}" class="pg-btn pg-btn-primary mt-3">
+                  <i class="fas fa-plus me-2"></i>Create Flock
+                </a>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="quick-start-card secondary">
+              <div class="card-icon">
+                <i class="fas fa-play-circle"></i>
+              </div>
+              <div class="card-content">
+                <h5>Try Demo Mode</h5>
+                <p class="pg-muted">Experience PoultraGuard with sample data before creating your own.</p>
+                <a href="{% url 'flock:choose' %}" class="pg-btn pg-btn-ghost mt-3">
+                  <i class="fas fa-play me-2"></i>Launch Demo
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Getting Started Tips -->
+      <div class="tips-section">
+        <div class="pg-card">
+          <div class="card-title mb-3">
+            <i class="fas fa-lightbulb me-2" style="color:var(--pg-warm-yellow)"></i>
+            Getting Started Tips
+          </div>
+          
+          <div class="tips-grid">
+            <div class="tip">
+              <div class="tip-icon">
+                <i class="fas fa-thermometer-half"></i>
+              </div>
+              <div class="tip-content">
+                <h6>Monitor Temperature Closely</h6>
+                <p class="pg-muted">Optimal poultry temperature ranges from 28°C to 34°C for most breeds.</p>
+              </div>
+            </div>
+            
+            <div class="tip">
+              <div class="tip-icon">
+                <i class="fas fa-tint"></i>
+              </div>
+              <div class="tip-content">
+                <h6>Maintain Proper Humidity</h6>
+                <p class="pg-muted">Keep humidity between 50-85% to prevent respiratory issues.</p>
+              </div>
+            </div>
+            
+            <div class="tip">
+              <div class="tip-icon">
+                <i class="fas fa-wind"></i>
+              </div>
+              <div class="tip-content">
+                <h6>Watch Ammonia Levels</h6>
+                <p class="pg-muted">Ammonia above 25 ppm can affect bird health and require ventilation.</p>
+              </div>
+            </div>
+            
+            <div class="tip">
+              <div class="tip-icon">
+                <i class="fas fa-bell"></i>
+              </div>
+              <div class="tip-content">
+                <h6>Set Up Alerts</h6>
+                <p class="pg-muted">Configure threshold alerts to get notified of abnormal conditions.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Tracker -->
+      <div class="progress-tracker mt-5 text-center">
+        <div class="progress-text pg-muted mb-2">
+          <i class="fas fa-flag-checkered me-1"></i>
+          You're on step 1 of 3
+        </div>
+        <div class="progress-bar-tracker">
+          <div class="progress-step active">
+            <div class="step-indicator">1</div>
+            <div class="step-label">Create Flock</div>
+          </div>
+          <div class="progress-connector"></div>
+          <div class="progress-step">
+            <div class="step-indicator">2</div>
+            <div class="step-label">Start Simulation</div>
+          </div>
+          <div class="progress-connector"></div>
+          <div class="progress-step">
+            <div class="step-indicator">3</div>
+            <div class="step-label">Monitor</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  {% endif %}
+
+</div>
+
+<style>
+  /* Dashboard Styles */
+  .metric-card {
+    background: var(--pg-surface);
+    border: 1px solid rgba(27,94,32,0.05);
+    border-radius: var(--pg-radius);
+    padding: 1rem;
+    text-align: center;
+    height: 100%;
+    transition: all 0.3s var(--pg-ease);
+  }
+
+  .metric-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(27,94,32,0.1);
+    border-color: rgba(27,94,32,0.1);
+  }
+
+  .metric-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.75rem;
+    font-size: 1.25rem;
+  }
+
+  .metric-icon.temp {
+    background: rgba(27,94,32,0.1);
+    color: var(--pg-forest-green);
+  }
+
+  .metric-icon.humidity {
+    background: rgba(33,150,243,0.1);
+    color: #2196F3;
+  }
+
+  .metric-icon.ammonia {
+    background: rgba(216,67,21,0.1);
+    color: #d84315;
+  }
+
+  .metric-icon.feed {
+    background: rgba(255,152,0,0.1);
+    color: #FF9800;
+  }
+
+  .metric-icon.water {
+    background: rgba(3,169,244,0.1);
+    color: #03A9F4;
+  }
+
+  .metric-icon.activity {
+    background: rgba(156,39,176,0.1);
+    color: #9C27B0;
+  }
+
+  .metric-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--pg-text-primary);
+    margin-bottom: 0.25rem;
+  }
+
+  .metric-label {
+    font-size: 0.85rem;
+    color: var(--pg-text-secondary);
+    margin-bottom: 0.5rem;
+  }
+
+  .metric-status {
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .status-good {
+    color: var(--pg-forest-green);
+  }
+
+  .status-warning {
+    color: var(--pg-warm-yellow);
+  }
+
+  .status-danger {
+    color: #d84315;
+  }
+
+  .block-header {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(27,94,32,0.08);
+  }
+
+  .block-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .chart-container-small {
+    height: 120px;
+    position: relative;
+    margin: 0 -1rem;
+    padding: 0 1rem;
+  }
+
+  .no-data-state {
+    background: rgba(27,94,32,0.02);
+    border-radius: var(--pg-radius);
+    border: 2px dashed rgba(27,94,32,0.1);
+  }
+
+  /* Status badges */
+  .status-badge .badge {
+    padding: 0.4rem 0.75rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+  }
+
+  /* Welcome Header Styles */
+  .welcome-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(27,94,32,0.08);
+  }
+
+  .greeting-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--pg-forest-green);
+    margin-bottom: 0.5rem;
+  }
+
+  .greeting-subtitle {
+    font-size: 1rem;
+    color: var(--pg-text-secondary);
+    margin: 0;
+  }
+
+  /* Dashboard Header */
+  .dashboard-header {
+    margin-bottom: 2rem;
+  }
+
+  /* Empty Dashboard Styles */
+  .empty-dashboard {
+    padding: 1rem 0;
+  }
+
+  .empty-state-illustration {
+    padding: 3rem 0;
+  }
+
+  .illustration-container {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin: 0 auto;
+  }
+
+  .illustration-icon {
+    font-size: 6rem;
+    color: var(--pg-forest-green);
+    opacity: 0.8;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+  }
+
+  .illustration-dots {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 180px;
+    height: 180px;
+  }
+
+  .illustration-dots .dot {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background: rgba(27,94,32,0.1);
+    border-radius: 50%;
+    animation: pulse 3s infinite;
+  }
+
+  .dot-1 {
+    top: 20px;
+    left: 20px;
+    animation-delay: 0s;
+  }
+
+  .dot-2 {
+    top: 20px;
+    right: 20px;
+    animation-delay: 1s;
+  }
+
+  .dot-3 {
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    animation-delay: 2s;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 0.3;
+    }
+    50% {
+      transform: scale(1.1);
+      opacity: 0.6;
+    }
+  }
+
+  .onboarding-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: var(--pg-surface);
+    border-radius: var(--pg-radius);
+    border: 1px solid rgba(27,94,32,0.05);
+    transition: all 0.3s var(--pg-ease);
+  }
+
+  .step:hover {
+    transform: translateX(10px);
+    box-shadow: var(--pg-shadow);
+    border-color: rgba(27,94,32,0.1);
+  }
+
+  .step-number {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--pg-forest-green) 0%, #1a511f 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .step-content h5 {
+    font-size: 1.2rem;
+    color: var(--pg-text-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .step-content p {
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  .quick-start-card {
+    padding: 2rem;
+    border-radius: var(--pg-radius);
+    height: 100%;
+    transition: all 0.3s var(--pg-ease);
+  }
+
+  .quick-start-card.primary {
+    background: linear-gradient(135deg, rgba(27,94,32,0.05) 0%, rgba(255,255,255,0) 100%);
+    border: 1px solid rgba(27,94,32,0.1);
+  }
+
+  .quick-start-card.secondary {
+    background: linear-gradient(135deg, rgba(255,193,7,0.05) 0%, rgba(255,255,255,0) 100%);
+    border: 1px solid rgba(255,193,7,0.1);
+  }
+
+  .quick-start-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--pg-shadow);
+  }
+
+  .card-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .quick-start-card.primary .card-icon {
+    color: var(--pg-forest-green);
+  }
+
+  .quick-start-card.secondary .card-icon {
+    color: var(--pg-warm-yellow);
+  }
+
+  .quick-start-card h5 {
+    font-size: 1.3rem;
+    color: var(--pg-text-primary);
+    margin-bottom: 0.75rem;
+  }
+
+  .quick-start-card p {
+    margin-bottom: 1.5rem;
+  }
+
+  .tips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .tip {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: var(--pg-radius);
+    background: rgba(27,94,32,0.02);
+    border: 1px solid rgba(27,94,32,0.03);
+    transition: all 0.3s var(--pg-ease);
+  }
+
+  .tip:hover {
+    background: rgba(27,94,32,0.05);
+    transform: translateY(-2px);
+  }
+
+  .tip-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(27,94,32,0.08);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--pg-forest-green);
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .tip-content h6 {
+    font-size: 1rem;
+    color: var(--pg-text-primary);
+    margin-bottom: 0.25rem;
+  }
+
+  .tip-content p {
+    font-size: 0.9rem;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .progress-tracker {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .progress-bar-tracker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .step-indicator {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .progress-step.active .step-indicator {
+    background: linear-gradient(135deg, var(--pg-forest-green) 0%, #1a511f 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(27,94,32,0.2);
+  }
+
+  .progress-step:not(.active) .step-indicator {
+    background: var(--pg-cool-gray-lighter);
+    color: var(--pg-text-tertiary);
+  }
+
+  .step-label {
+    font-size: 0.9rem;
+    color: var(--pg-text-secondary);
+    font-weight: 500;
+  }
+
+  .progress-step.active .step-label {
+    color: var(--pg-forest-green);
+    font-weight: 600;
+  }
+
+  .progress-connector {
+    width: 60px;
+    height: 3px;
+    background: var(--pg-cool-gray-lighter);
+    position: relative;
+  }
+
+  .progress-step.active ~ .progress-step .progress-connector {
+    background: linear-gradient(90deg, var(--pg-forest-green), var(--pg-cool-gray-lighter));
+  }
+
+  /* Responsive */
+  @media (max-width: 1200px) {
+    .col-xl-2 {
+      flex: 0 0 auto;
+      width: 25%;
+    }
+  }
+
+  @media (max-width: 992px) {
+    .col-xl-2 {
+      flex: 0 0 auto;
+      width: 33.333333%;
+    }
+    
+    .greeting-title {
+      font-size: 1.8rem;
+    }
+
+    .onboarding-steps {
+      gap: 1rem;
+    }
+
+    .step {
+      flex-direction: column;
+      text-align: center;
+      gap: 1rem;
+    }
+
+    .step-number {
+      margin: 0 auto;
+    }
+
+    .tips-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .progress-bar-tracker {
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .progress-connector {
+      width: 30px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .col-xl-2 {
+      flex: 0 0 auto;
+      width: 50%;
+    }
+    
+    .metric-value {
+      font-size: 1.3rem;
+    }
+    
+    .chart-container-small {
+      height: 100px;
+    }
+    
+    .greeting-title {
+      font-size: 1.6rem;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .col-xl-2 {
+      flex: 0 0 auto;
+      width: 100%;
+    }
+    
+    .greeting-title {
+      font-size: 1.4rem;
+    }
+
+    .illustration-container {
+      width: 150px;
+      height: 150px;
+    }
+
+    .illustration-icon {
+      font-size: 4rem;
+    }
+
+    .quick-start-card {
+      padding: 1.5rem;
+    }
+    
+    .block-meta {
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    
+    .welcome-header {
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+    }
+  }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Time-Sensitive Greeting
+    const hour = new Date().getHours();
+    let greeting;
+    
+    if (hour < 12) greeting = "Good Morning";
+    else if (hour < 18) greeting = "Good Afternoon";
+    else greeting = "Good Evening";
+    
+    const greetingText = document.getElementById('greetingText');
+    if (greetingText) {
+      const username = "{{ user.username }}";
+      if (username) {
+        greetingText.textContent = `${greeting}, ${username}!`;
+      } else {
+        greetingText.textContent = `${greeting}!`;
+      }
+    }
+    
+    // Initialize charts for blocks with data
+    {% for item in block_data %}
+      {% if item.history_json %}
+        const ctx{{ item.block.id }} = document.getElementById('chart-{{ item.block.id }}');
+        if (ctx{{ item.block.id }}) {
+          const historyData{{ item.block.id }} = JSON.parse(`{{ item.history_json|escapejs }}`);
+          
+          new Chart(ctx{{ item.block.id }}, {
+            type: 'line',
+            data: {
+              labels: historyData{{ item.block.id }}.map(item => {
+                const date = new Date(item.timestamp);
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+              }),
+              datasets: [{
+                label: 'Temperature',
+                data: historyData{{ item.block.id }}.map(item => item.temperature),
+                borderColor: 'rgba(27, 94, 32, 0.9)',
+                backgroundColor: 'rgba(27, 94, 32, 0.1)',
+                tension: 0.4,
+                pointRadius: 0,
+                borderWidth: 2,
+                fill: true
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  mode: 'index',
+                  intersect: false
+                }
+              },
+              scales: {
+                x: {
+                  display: false,
+                  grid: { display: false }
+                },
+                y: {
+                  display: true,
+                  grid: { 
+                    color: 'rgba(27,94,32,0.05)',
+                    drawBorder: false
+                  },
+                  ticks: {
+                    font: { size: 10 },
+                    color: 'var(--pg-text-tertiary)'
+                  }
+                }
+              },
+              interaction: {
+                intersect: false,
+                mode: 'nearest'
+              }
+            }
+          });
+        }
+      {% endif %}
+    {% endfor %}
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,503 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Login - PoultraGuard{% endblock %}
+
+{% block content %}
+<div class="auth-container py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-7">
+                <div class="auth-card">
+                    <!-- Card Header -->
+                    <div class="auth-card-header">
+                        <div class="auth-icon">
+                            <i class="fas fa-sign-in-alt"></i>
+                        </div>
+                        <h2 class="auth-title">Welcome Back</h2>
+                        <p class="auth-subtitle">Sign in to access your poultry monitoring dashboard</p>
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="auth-card-body">
+                        <form method="POST" id="loginForm">
+                            {% csrf_token %}
+                            
+                            {% if form.non_field_errors %}
+                            <div class="auth-alert alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
+                            <!-- Username/Email Field -->
+                            <div class="form-group">
+                                <label for="{{ form.username.id_for_label }}" class="form-label">
+                                    <i class="fas fa-user me-2"></i>Username or Email
+                                </label>
+                                <div class="input-with-icon">
+                                    {{ form.username }}
+                                    <i class="fas fa-user input-icon"></i>
+                                </div>
+                                {% if form.username.errors %}
+                                <div class="form-error">
+                                    {% for error in form.username.errors %}
+                                        <small><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Password Field -->
+                            <div class="form-group">
+                                <label for="{{ form.password.id_for_label }}" class="form-label">
+                                    <i class="fas fa-lock me-2"></i>Password
+                                </label>
+                                <div class="password-wrapper">
+                                    {{ form.password }}
+                                    <i class="fas fa-lock input-icon"></i>
+                                    <button type="button" class="password-toggle" id="togglePassword">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                {% if form.password.errors %}
+                                <div class="form-error">
+                                    {% for error in form.password.errors %}
+                                        <small><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!--  Forgot Password -->
+                            <div class="form-options">
+                                <a href="#" class="forgot-password">
+                                    Forgot password?
+                                </a>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="form-group">
+                                <button type="submit" class="auth-btn">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- Alternative Registration -->
+                        <div class="auth-divider">
+                            <span>New to PoultraGuard?</span>
+                        </div>
+                        <div class="text-center">
+                            <a href="{% url 'register' %}" class="auth-link">
+                                <i class="fas fa-user-plus me-2"></i>Create a new account
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Reuse auth styles from register page */
+    .auth-container {
+        min-height: calc(100vh - 200px);
+        display: flex;
+        align-items: center;
+    }
+
+    .auth-card {
+        background: var(--pg-surface);
+        border-radius: var(--pg-radius-lg);
+        box-shadow: var(--pg-shadow);
+        border: 1px solid rgba(27,94,32,0.1);
+        overflow: hidden;
+        transition: transform 0.3s var(--pg-ease);
+    }
+
+    .auth-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(27,94,32,0.1);
+    }
+
+    .auth-card-header {
+        background: linear-gradient(135deg, var(--pg-forest-green) 0%, #1a511f 100%);
+        color: white;
+        padding: 2.5rem 2rem;
+        text-align: center;
+    }
+
+    .auth-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        width: 70px;
+        height: 70px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+    }
+
+    .auth-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .auth-subtitle {
+        opacity: 0.9;
+        font-size: 0.95rem;
+        margin: 0;
+    }
+
+    .auth-card-body {
+        padding: 2.5rem 2rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: var(--pg-text-primary);
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    /* Input with Icon */
+    .input-with-icon {
+        position: relative;
+    }
+
+    .input-with-icon .input-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--pg-text-tertiary);
+        font-size: 1rem;
+    }
+
+    .input-with-icon input {
+        padding-left: 45px !important;
+    }
+
+    /* Password Wrapper */
+    .password-wrapper {
+        position: relative;
+    }
+
+    .password-wrapper .input-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--pg-text-tertiary);
+        font-size: 1rem;
+    }
+
+    .password-wrapper input {
+        padding-left: 45px !important;
+        padding-right: 50px !important;
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        color: var(--pg-text-tertiary);
+        cursor: pointer;
+        padding: 0.25rem;
+        transition: color 0.2s var(--pg-ease);
+        z-index: 2;
+    }
+
+    .password-toggle:hover {
+        color: var(--pg-forest-green);
+    }
+
+    input[type="text"],
+    input[type="password"] {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 1px solid rgba(27,94,32,0.15);
+        border-radius: var(--pg-radius);
+        background: var(--pg-surface);
+        color: var(--pg-text-primary);
+        font-size: 1rem;
+        transition: all 0.3s var(--pg-ease);
+    }
+
+    input[type="text"]:focus,
+    input[type="password"]:focus {
+        outline: none;
+        border-color: var(--pg-forest-green);
+        box-shadow: 0 0 0 3px rgba(27,94,32,0.1);
+    }
+
+    /* Form Options */
+    .form-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-check {
+        display: flex;
+        align-items: center;
+    }
+
+    .form-check-input {
+        margin-right: 0.5rem;
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
+        border: 2px solid rgba(27,94,32,0.2);
+        cursor: pointer;
+    }
+
+    .form-check-input:checked {
+        background-color: var(--pg-forest-green);
+        border-color: var(--pg-forest-green);
+    }
+
+    .form-check-label {
+        font-size: 0.9rem;
+        color: var(--pg-text-secondary);
+        cursor: pointer;
+    }
+
+    .forgot-password {
+        color: var(--pg-forest-green);
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: color 0.2s var(--pg-ease);
+    }
+
+    .forgot-password:hover {
+        color: var(--pg-forest-green-light);
+        text-decoration: underline;
+    }
+
+    /* Submit Button */
+    .auth-btn {
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, var(--pg-forest-green) 0%, #1a511f 100%);
+        color: white;
+        border: none;
+        border-radius: var(--pg-radius);
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s var(--pg-ease);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .auth-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(27,94,32,0.2);
+    }
+
+    /* Divider */
+    .auth-divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 2rem 0;
+        color: var(--pg-text-tertiary);
+    }
+
+    .auth-divider::before,
+    .auth-divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid rgba(27,94,32,0.1);
+    }
+
+    .auth-divider span {
+        padding: 0 1rem;
+        font-size: 0.9rem;
+    }
+
+    /* Auth Link */
+    .auth-link {
+        display: inline-flex;
+        align-items: center;
+        color: var(--pg-forest-green);
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.2s var(--pg-ease);
+    }
+
+    .auth-link:hover {
+        color: var(--pg-forest-green-light);
+        transform: translateX(5px);
+    }
+
+    /* Demo Info */
+    .demo-info {
+        margin-top: 2rem;
+    }
+
+    .demo-card {
+        background: rgba(255, 193, 7, 0.08);
+        border: 1px solid rgba(255, 193, 7, 0.15);
+        border-radius: var(--pg-radius);
+        padding: 1rem;
+    }
+
+    .demo-card h6 {
+        color: var(--pg-warning);
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .demo-card small {
+        font-size: 0.85rem;
+        line-height: 1.5;
+    }
+
+    /* Alert */
+    .auth-alert {
+        margin-bottom: 1.5rem;
+        border-radius: var(--pg-radius);
+    }
+
+    /* Form Error */
+    .form-error {
+        margin-top: 0.5rem;
+    }
+
+    .form-error small {
+        color: var(--pg-rust-orange);
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .auth-card-header,
+        .auth-card-body {
+            padding: 1.5rem;
+        }
+
+        .auth-title {
+            font-size: 1.5rem;
+        }
+
+        .auth-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 2rem;
+        }
+
+        .form-options {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .auth-container {
+            padding: 1rem 0;
+        }
+
+        .auth-card {
+            margin: 0 0.5rem;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            padding: 0.75rem 0.875rem;
+        }
+
+        .auth-btn {
+            padding: 0.875rem;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Password toggle functionality
+        const passwordField = document.getElementById('{{ form.password.id_for_label }}');
+        const toggleButton = document.getElementById('togglePassword');
+        
+        if (toggleButton && passwordField) {
+            toggleButton.addEventListener('click', function() {
+                const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordField.setAttribute('type', type);
+                this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+            });
+        }
+        
+        // Add focus effects to inputs
+        const inputs = document.querySelectorAll('input[type="text"], input[type="password"]');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.classList.remove('focused');
+            });
+        });
+        
+        // Form validation
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', function(e) {
+                const username = document.getElementById('{{ form.username.id_for_label }}');
+                const password = document.getElementById('{{ form.password.id_for_label }}');
+                
+                if (!username.value.trim() || !password.value.trim()) {
+                    e.preventDefault();
+                    // Highlight empty fields
+                    if (!username.value.trim()) {
+                        username.style.borderColor = 'var(--pg-rust-orange)';
+                    }
+                    if (!password.value.trim()) {
+                        password.style.borderColor = 'var(--pg-rust-orange)';
+                    }
+                    
+                    // Reset border colors on input
+                    username.addEventListener('input', function() {
+                        this.style.borderColor = '';
+                    });
+                    password.addEventListener('input', function() {
+                        this.style.borderColor = '';
+                    });
+                }
+            });
+        }
+        
+        // Auto-focus username field on page load
+        const usernameField = document.getElementById('{{ form.username.id_for_label }}');
+        if (usernameField) {
+            setTimeout(() => {
+                usernameField.focus();
+            }, 300);
+        }
+    });
+</script>
+{% endblock %}

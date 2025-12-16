@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Simulation - {{ block.name }}</title>
+    
+    <!-- Bootstrap 5 CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="{% static 'images/fav.png' %}"> 
+
+    <!-- Custom CSS for this page only -->
+    <style>
+        /* Reset everything for this page */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container-fluid {
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* Header */
+        .page-header {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-left: 6px solid #28a745;
+        }
+        
+        .page-header h1 {
+            color: #2c3e50;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .page-subtitle {
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+        
+        /* Status badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 14px;
+            background: #e8f5e9;
+            color: #28a745;
+        }
+        
+        .status-badge.stopped {
+            background: #f5f5f5;
+            color: #6c757d;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            background: #28a745;
+        }
+        
+        .status-dot.stopped {
+            background: #6c757d;
+        }
+        
+        /* Cards */
+        .card-custom {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: none;
+        }
+        
+        .card-title {
+            color: #2c3e50;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        /* Block info */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .info-item {
+            margin-bottom: 15px;
+        }
+        
+        .info-label {
+            color: #6c757d;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            color: #2c3e50;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        /* Canvas Container */
+        .canvas-container {
+            background: white;
+            border-radius: 12px;
+            padding: 0;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        #simulationCanvas {
+            display: block;
+            width: 100%;
+            height: 500px;
+            background: linear-gradient(180deg, #87CEEB 0%, #E0F7FA 100%);
+            cursor: pointer;
+        }
+        
+        .canvas-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 30px;
+            z-index: 10;
+        }
+        
+        .canvas-overlay h3 {
+            margin-bottom: 10px;
+            color: white;
+        }
+        
+        /* Data cards */
+        .data-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            border-top: 4px solid;
+            height: 100%;
+        }
+        
+        .data-card.temp { border-color: #dc3545; }
+        .data-card.humidity { border-color: #17a2b8; }
+        .data-card.ammonia { border-color: #ffc107; }
+        .data-card.activity { border-color: #28a745; }
+        
+        .data-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 10px 0;
+            color: #2c3e50;
+        }
+        
+        .data-label {
+            color: #6c757d;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        /* Buttons */
+        .btn-custom {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+            text-align: center;
+            text-decoration: none;
+        }
+        
+        .btn-start {
+            background: linear-gradient(135deg, #28a745, #218838);
+            color: white;
+        }
+        
+        .btn-stop {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        /* Control buttons */
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .control-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: #f8f9fa;
+            color: #333;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .control-btn:hover {
+            background: #e9ecef;
+        }
+        
+        .control-btn.active {
+            background: #28a745;
+            color: white;
+        }
+        
+        /* Alerts */
+        .alert-item {
+            padding: 15px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .alert-item.critical {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+        
+        .alert-title {
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 5px;
+        }
+        
+        .alert-title.critical {
+            color: #721c24;
+        }
+        
+        /* Empty states */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+        
+        /* Live Data Display */
+        .live-data-display {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 5;
+        }
+        
+        .live-data-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin: 3px 0;
+        }
+        
+        .live-data-label {
+            color: #666;
+        }
+        
+        .live-data-value {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        /* Bird counter */
+        .bird-counter {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 5;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container-fluid {
+                padding: 15px;
+            }
+            
+            .page-header {
+                padding: 20px;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .data-value {
+                font-size: 28px;
+            }
+            
+            #simulationCanvas {
+                height: 400px;
+            }
+            
+            .control-buttons {
+                flex-direction: column;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            #simulationCanvas {
+                height: 300px;
+            }
+        }
+        
+        /* Animation */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Container -->
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="page-header">
+            <h1>Live Simulation: {{ block.name }}</h1>
+            <p class="page-subtitle">Real-time monitoring and simulation control</p>
+            
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div class="d-flex flex-wrap gap-3">
+                    <div class="status-badge {% if not simulator_running %}stopped{% endif %}">
+                        <span class="status-dot {% if not simulator_running %}stopped{% endif %}"></span>
+                        {% if simulator_running %}Simulation Running{% else %}Simulation Stopped{% endif %}
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-success fs-6">{{ block.number_of_birds }} birds</span>
+                        <span class="ms-3 text-muted">{{ block.get_breed_display }} · {{ block.get_age_group_display }}</span>
+                    </div>
+                </div>
+                
+                <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column - Canvas & Block Info -->
+            <div class="col-lg-8">
+                <!-- Simulation Canvas -->
+                <div class="canvas-container">
+                    <canvas id="simulationCanvas"></canvas>
+                    
+                    <!-- Live Data Overlay -->
+                    <div class="live-data-display">
+                        <div class="live-data-item">
+                            <span class="live-data-label">Temp:</span>
+                            <span id="live-temp" class="live-data-value">--°C</span>
+                        </div>
+                        <div class="live-data-item">
+                            <span class="live-data-label">Humidity:</span>
+                            <span id="live-humidity" class="live-data-value">--%</span>
+                        </div>
+                        <div class="live-data-item">
+                            <span class="live-data-label">Activity:</span>
+                            <span id="live-activity" class="live-data-value">--%</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Bird Counter -->
+                    <div class="bird-counter">
+                        <i class="fas fa-kiwi-bird me-2"></i>
+                        <span id="bird-count">{{ block.number_of_birds }}</span> birds
+                    </div>
+                    
+                    <!-- Overlay if simulation is stopped -->
+                    {% if not simulator_running %}
+                    <div class="canvas-overlay">
+                        <i class="fas fa-play-circle fa-4x mb-3 pulse" style="color: #28a745;"></i>
+                        <h3>Simulation Stopped</h3>
+                        <p class="mb-4">Start the simulation to see live visualization</p>
+                        <a href="{% url 'start_sim' block.id %}" class="btn btn-success btn-lg">
+                            <i class="fas fa-play me-2"></i>Start Simulation
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Canvas Controls -->
+                <div class="control-buttons">
+                    <button id="pauseBtn" class="control-btn">
+                        <i class="fas fa-pause me-2"></i>Pause Simulation
+                    </button>
+                    <button id="dayNightBtn" class="control-btn">
+                        <i class="fas fa-sun me-2"></i>Day Mode
+                    </button>
+                    <button id="refreshBtn" class="control-btn">
+                        <i class="fas fa-sync me-2"></i>Refresh Data
+                    </button>
+                </div>
+
+                <!-- Block Information -->
+                <div class="card-custom mt-4">
+                    <h2 class="card-title">
+                        <i class="fas fa-info-circle me-2"></i>Block Information
+                    </h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">Block Name</div>
+                            <div class="info-value">{{ block.name }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Number of Birds</div>
+                            <div class="info-value">{{ block.number_of_birds }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Breed</div>
+                            <div class="info-value">{{ block.get_breed_display }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Age Group</div>
+                            <div class="info-value">{{ block.get_age_group_display }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Created</div>
+                            <div class="info-value">{{ block.created_at|date:"M d, Y" }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Last Updated</div>
+                            <div class="info-value">{{ block.updated_at|date:"M d, Y H:i" }}</div>
+                        </div>
+                    </div>
+                    
+                    {% if block.description %}
+                    <div class="mt-4">
+                        <div class="info-label">Description</div>
+                        <div style="color: #495057; line-height: 1.6; padding: 15px; background: #f8f9fa; border-radius: 8px; margin-top: 5px;">
+                            {{ block.description|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Right Column - Controls & Alerts -->
+            <div class="col-lg-4">
+                <!-- Simulation Controls -->
+                <div class="card-custom">
+                    <h2 class="card-title">
+                        <i class="fas fa-play-circle me-2"></i>Simulation Control
+                    </h2>
+                    
+                    {% if simulator_running %}
+                    <a href="{% url 'stop_sim' block.id %}" class="btn-custom btn-stop">
+                        <i class="fas fa-stop me-2"></i>Stop Simulation
+                    </a>
+                    <p class="text-muted mb-3" style="font-size: 14px;">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Simulation is actively generating data
+                    </p>
+                    {% else %}
+                    <a href="{% url 'start_sim' block.id %}" class="btn-custom btn-start">
+                        <i class="fas fa-play me-2"></i>Start Simulation
+                    </a>
+                    <p class="text-muted mb-3" style="font-size: 14px;">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Start simulation to begin data generation
+                    </p>
+                    {% endif %}
+                    
+                    <a href="{% url 'dashboard' %}" class="btn-custom btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                    
+                    <div class="mt-4 pt-3 border-top">
+                        <div class="info-item">
+                            <div class="info-label">Current Time</div>
+                            <div id="current-time" class="info-value" style="font-family: monospace;">--:--:--</div>
+                        </div>
+                        <div class="info-item mt-3">
+                            <div class="info-label">Last Data Update</div>
+                            <div id="last-update" class="info-value" style="font-size: 16px;">--:--</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Sensor Data -->
+                <div class="card-custom">
+                    <h2 class="card-title">
+                        <i class="fas fa-chart-line me-2"></i>Live Sensor Data
+                    </h2>
+                    
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <div class="data-card temp">
+                                <div class="data-label">Temperature</div>
+                                <div id="sensor-temp" class="data-value">
+                                    {% if latest_data %}{{ latest_data.temperature|floatformat:1 }}°C{% else %}--°C{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="data-card humidity">
+                                <div class="data-label">Humidity</div>
+                                <div id="sensor-humidity" class="data-value">
+                                    {% if latest_data %}{{ latest_data.humidity|floatformat:1 }}%{% else %}--%{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="data-card ammonia">
+                                <div class="data-label">Ammonia</div>
+                                <div id="sensor-ammonia" class="data-value">
+                                    {% if latest_data %}{{ latest_data.ammonia|floatformat:1 }} ppm{% else %}-- ppm{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="data-card activity">
+                                <div class="data-label">Activity</div>
+                                <div id="sensor-activity" class="data-value">
+                                    {% if latest_data %}{{ latest_data.activity|floatformat:1 }}%{% else %}--%{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <small class="text-muted" id="sensor-time">
+                            {% if latest_data %}Last: {{ latest_data.timestamp|timesince }} ago{% else %}No data yet{% endif %}
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Active Alerts (Limited to 5) -->
+                <div class="card-custom">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="card-title mb-0">
+                            <i class="fas fa-bell me-2"></i>Active Alerts
+                        </h2>
+                        <span class="badge bg-warning" id="alert-count">
+                            {% with active_alerts|slice:":5" as recent_alerts %}
+                                {{ recent_alerts|length }}
+                            {% endwith %}
+                        </span>
+                    </div>
+                    
+                    <div id="alerts-container">
+                        {% with active_alerts|slice:":5" as recent_alerts %}
+                            {% if recent_alerts %}
+                                {% for alert in recent_alerts %}
+                                <div class="alert-item {% if alert.alert_type == 'CRITICAL' %}critical{% endif %}">
+                                    <div class="alert-title {% if alert.alert_type == 'CRITICAL' %}critical{% endif %}">
+                                        {{ alert.alert_type }}
+                                    </div>
+                                    <div class="alert-message">{{ alert.message }}</div>
+                                    <small class="text-muted">{{ alert.timestamp|date:"M d, H:i" }}</small>
+                                </div>
+                                {% endfor %}
+                                
+                                {% if active_alerts|length > 5 %}
+                                <div class="text-center mt-2">
+                                    <small class="text-muted">
+                                        +{{ active_alerts|length|add:"-5" }} more alert{{ active_alerts|length|add:"-5"|pluralize }}
+                                    </small>
+                                </div>
+                                {% endif %}
+                            {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                                <h4 class="text-success">All Systems Normal</h4>
+                                <p>No active alerts at this time</p>
+                            </div>
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Canvas Simulation JavaScript -->
+    <script>
+        // Canvas Simulation Variables
+        let canvas, ctx;
+        let isPaused = false;
+        let isDayTime = true;
+        let simulationInterval;
+        let dataUpdateInterval;
+        let birds = [];
+        let currentData = null;
+        let barnBounds = null;
+        
+        // Initialize canvas
+        function initCanvas() {
+            canvas = document.getElementById('simulationCanvas');
+            if (!canvas) return;
+            
+            ctx = canvas.getContext('2d');
+            
+            // Set canvas size
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            
+            // Calculate barn bounds
+            calculateBarnBounds();
+            
+            // Initialize birds
+            initBirds();
+            
+            // Start simulation loop
+            if ({{ simulator_running|yesno:"true,false" }}) {
+                startSimulation();
+            } else {
+                drawStatic();
+            }
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                calculateBarnBounds();
+                draw();
+            });
+        }
+        
+        // Calculate barn boundaries for bird containment
+        function calculateBarnBounds() {
+            const barnWidth = canvas.width * 0.6;
+            const barnHeight = canvas.height * 0.4;
+            const barnX = (canvas.width - barnWidth) / 2;
+            const barnY = canvas.height * 0.3;
+            
+            // Barn interior bounds (with padding from walls)
+            barnBounds = {
+                x: barnX + 20,
+                y: barnY + 20,
+                width: barnWidth - 40,
+                height: barnHeight - 40,
+                floorY: barnY + barnHeight - 20 // Floor level
+            };
+        }
+        
+        // Initialize bird objects with realistic behavior
+        function initBirds() {
+            birds = [];
+            const birdCount = Math.min({{ block.number_of_birds }}, 100); // Limit for performance
+            
+            for (let i = 0; i < birdCount; i++) {
+                birds.push({
+                    x: barnBounds.x + Math.random() * barnBounds.width,
+                    y: barnBounds.floorY - 5, // Start on the floor
+                    size: 8 + Math.random() * 6, // Realistic chicken size
+                    speed: 0.1 + Math.random() * 0.3, // Slow walking speed
+                    direction: Math.random() * Math.PI * 2,
+                    color: getRandomBirdColor(),
+                    wingFlap: Math.random() * Math.PI * 2,
+                    behavior: 'walking', // walking, eating, resting
+                    behaviorTimer: 0,
+                    targetX: null,
+                    targetY: null,
+                    isOnFloor: true
+                });
+            }
+        }
+        
+        // Get random bird color based on breed
+        function getRandomBirdColor() {
+            const breed = '{{ block.breed }}';
+            const colors = {
+                'broiler': ['#FF9800', '#FFB74D', '#FFA726', '#FF8A65'], // Orange/Yellow/Peach
+                'layer': ['#F44336', '#E57373', '#EF5350', '#E53935'],   // Red variations
+                'kuroiler': ['#795548', '#5D4037', '#6D4C41', '#4E342E'], // Brown variations
+                'local': ['#9E9E9E', '#757575', '#616161', '#424242']     // Gray variations
+            };
+            
+            const breedColors = colors[breed] || ['#FF9800', '#FFB74D'];
+            return breedColors[Math.floor(Math.random() * breedColors.length)];
+        }
+        
+        // Start simulation loop
+        function startSimulation() {
+            if (simulationInterval) {
+                clearInterval(simulationInterval);
+            }
+            
+            // Update birds for smooth animation
+            simulationInterval = setInterval(function() {
+                if (!isPaused) {
+                    updateBirds();
+                    draw();
+                }
+            }, 100);
+            
+            // Update sensor data less frequently
+            if (dataUpdateInterval) {
+                clearInterval(dataUpdateInterval);
+            }
+            
+            dataUpdateInterval = setInterval(function() {
+                if (!isPaused) {
+                    updateSensorData();
+                }
+            }, 5000); // Update sensor data every 5 seconds
+        }
+        
+        // Stop simulation
+        function stopSimulation() {
+            if (simulationInterval) {
+                clearInterval(simulationInterval);
+                simulationInterval = null;
+            }
+            if (dataUpdateInterval) {
+                clearInterval(dataUpdateInterval);
+                dataUpdateInterval = null;
+            }
+            drawStatic();
+        }
+        
+        // Update bird positions with realistic behavior
+        function updateBirds() {
+            const activityLevel = currentData ? currentData.activity / 100 : 0.3;
+            const baseSpeed = 0.05 + activityLevel * 0.2;
+            
+            birds.forEach(bird => {
+                // Update behavior
+                updateBirdBehavior(bird, activityLevel);
+                
+                // Move towards target if exists
+                if (bird.targetX !== null && bird.targetY !== null) {
+                    const dx = bird.targetX - bird.x;
+                    const dy = bird.targetY - bird.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance > 5) {
+                        bird.direction = Math.atan2(dy, dx);
+                        bird.x += Math.cos(bird.direction) * bird.speed * baseSpeed;
+                        bird.y += Math.sin(bird.direction) * bird.speed * baseSpeed;
+                    } else {
+                        // Reached target, clear it
+                        bird.targetX = null;
+                        bird.targetY = null;
+                    }
+                } else {
+                    // Random wandering
+                    if (Math.random() < 0.02) {
+                        bird.direction += (Math.random() - 0.5) * 1.5;
+                    }
+                    
+                    // Move based on behavior
+                    let moveSpeed = bird.speed * baseSpeed;
+                    if (bird.behavior === 'resting') {
+                        moveSpeed *= 0.1;
+                    } else if (bird.behavior === 'eating') {
+                        moveSpeed *= 0.3;
+                    }
+                    
+                    bird.x += Math.cos(bird.direction) * moveSpeed;
+                    bird.y += Math.sin(bird.direction) * moveSpeed * 0.5;
+                }
+                
+                // Keep birds within barn bounds
+                bird.x = Math.max(barnBounds.x, Math.min(barnBounds.x + barnBounds.width, bird.x));
+                bird.y = Math.max(barnBounds.floorY - 20, Math.min(barnBounds.floorY + 5, bird.y));
+                
+                // Keep birds on the floor
+                if (bird.y < barnBounds.floorY - 5) {
+                    bird.y = barnBounds.floorY - 5;
+                }
+                
+                // Update wing flap for animation
+                if (bird.behavior === 'walking' && Math.random() < 0.1) {
+                    bird.wingFlap += 0.1;
+                }
+            });
+        }
+        
+        // Update bird behavior
+        function updateBirdBehavior(bird, activityLevel) {
+            bird.behaviorTimer--;
+            
+            if (bird.behaviorTimer <= 0 || Math.random() < 0.01) {
+                // Change behavior
+                const behaviors = ['walking', 'eating', 'resting'];
+                const weights = [
+                    activityLevel * 0.6,
+                    activityLevel * 0.3,
+                    (1 - activityLevel) * 0.8
+                ];
+                
+                let total = weights.reduce((a, b) => a + b, 0);
+                let rand = Math.random() * total;
+                let sum = 0;
+                
+                for (let i = 0; i < behaviors.length; i++) {
+                    sum += weights[i];
+                    if (rand <= sum) {
+                        bird.behavior = behaviors[i];
+                        break;
+                    }
+                }
+                
+                // Set behavior timer
+                bird.behaviorTimer = 30 + Math.random() * 70;
+                
+                // Set target for walking/eating
+                if (bird.behavior === 'walking' || bird.behavior === 'eating') {
+                    bird.targetX = barnBounds.x + Math.random() * barnBounds.width;
+                    bird.targetY = barnBounds.floorY - 5;
+                } else {
+                    // Resting - no target
+                    bird.targetX = null;
+                    bird.targetY = null;
+                }
+            }
+        }
+        
+        // Draw everything
+        function draw() {
+            if (!ctx) return;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw background
+            drawBackground();
+            
+            // Draw barn/coop
+            drawBarn();
+            
+            // Draw feed and water stations
+            drawStations();
+            
+            // Draw birds
+            birds.forEach(drawBird);
+        }
+        
+        // Draw static view (when simulation is stopped)
+        function drawStatic() {
+            if (!ctx) return;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw background
+            drawBackground();
+            
+            // Draw barn/coop
+            drawBarn();
+            
+            // Draw feed and water stations
+            drawStations();
+            
+            // Draw stationary birds
+            birds.forEach(bird => {
+                drawBird({...bird, wingFlap: 0});
+            });
+        }
+        
+        // Draw background (sky/ground)
+        function drawBackground() {
+            // Sky
+            const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.7);
+            if (isDayTime) {
+                skyGradient.addColorStop(0, '#87CEEB');
+                skyGradient.addColorStop(1, '#E0F7FA');
+            } else {
+                skyGradient.addColorStop(0, '#0D1B2A');
+                skyGradient.addColorStop(1, '#1B263B');
+            }
+            ctx.fillStyle = skyGradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height * 0.7);
+            
+            // Ground
+            const groundGradient = ctx.createLinearGradient(0, canvas.height * 0.7, 0, canvas.height);
+            if (isDayTime) {
+                groundGradient.addColorStop(0, '#8BC34A');
+                groundGradient.addColorStop(1, '#689F38');
+            } else {
+                groundGradient.addColorStop(0, '#37474F');
+                groundGradient.addColorStop(1, '#263238');
+            }
+            ctx.fillStyle = groundGradient;
+            ctx.fillRect(0, canvas.height * 0.7, canvas.width, canvas.height * 0.3);
+        }
+        
+        // Draw barn/coop structure
+        function drawBarn() {
+            const barnWidth = canvas.width * 0.6;
+            const barnHeight = canvas.height * 0.4;
+            const barnX = (canvas.width - barnWidth) / 2;
+            const barnY = canvas.height * 0.3;
+            
+            // Barn body
+            ctx.fillStyle = isDayTime ? '#8B4513' : '#654321';
+            ctx.fillRect(barnX, barnY, barnWidth, barnHeight);
+            
+            // Barn roof
+            ctx.beginPath();
+            ctx.moveTo(barnX - 20, barnY);
+            ctx.lineTo(barnX + barnWidth / 2, barnY - 40);
+            ctx.lineTo(barnX + barnWidth + 20, barnY);
+            ctx.closePath();
+            ctx.fillStyle = isDayTime ? '#A52A2A' : '#8B0000';
+            ctx.fill();
+            
+            // Barn door
+            ctx.fillStyle = isDayTime ? '#D2691E' : '#8B4513';
+            ctx.fillRect(barnX + barnWidth / 2 - 30, barnY + barnHeight - 60, 60, 60);
+            
+            // Windows
+            ctx.fillStyle = isDayTime ? '#87CEEB' : '#4682B4';
+            ctx.fillRect(barnX + 30, barnY + 30, 40, 40);
+            ctx.fillRect(barnX + barnWidth - 70, barnY + 30, 40, 40);
+            
+            // Barn text
+            ctx.fillStyle = isDayTime ? '#FFF' : '#DDD';
+            ctx.font = 'bold 20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('{{ block.name }}', barnX + barnWidth / 2, barnY + barnHeight / 2);
+            
+            // Barn floor (inside)
+            ctx.fillStyle = isDayTime ? '#D7CCC8' : '#A1887F';
+            ctx.fillRect(barnX + 10, barnY + barnHeight - 20, barnWidth - 20, 10);
+        }
+        
+        // Draw a single bird with realistic appearance
+        function drawBird(bird) {
+            // Body (chicken-shaped)
+            ctx.save();
+            ctx.translate(bird.x, bird.y);
+            ctx.rotate(bird.direction);
+            
+            // Body ellipse
+            ctx.fillStyle = bird.color;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, bird.size, bird.size * 0.7, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Tail feathers
+            ctx.fillStyle = bird.color;
+            ctx.beginPath();
+            ctx.ellipse(-bird.size * 0.8, 0, bird.size * 0.4, bird.size * 0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Head
+            ctx.fillStyle = bird.color;
+            ctx.beginPath();
+            ctx.arc(bird.size * 0.8, -bird.size * 0.3, bird.size * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Comb (red crest)
+            if (isDayTime) {
+                ctx.fillStyle = '#D32F2F';
+                ctx.beginPath();
+                ctx.ellipse(bird.size * 0.9, -bird.size * 0.6, bird.size * 0.3, bird.size * 0.2, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Beak
+            ctx.fillStyle = '#FF9800';
+            ctx.beginPath();
+            ctx.moveTo(bird.size * 1.2, -bird.size * 0.3);
+            ctx.lineTo(bird.size * 1.5, -bird.size * 0.3);
+            ctx.lineTo(bird.size * 1.2, -bird.size * 0.1);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Eye
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(bird.size * 0.9, -bird.size * 0.4, bird.size * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Legs
+            ctx.fillStyle = '#FF9800';
+            // Left leg
+            ctx.fillRect(-bird.size * 0.2, bird.size * 0.5, bird.size * 0.15, bird.size * 0.8);
+            // Right leg
+            ctx.fillRect(bird.size * 0.05, bird.size * 0.5, bird.size * 0.15, bird.size * 0.8);
+            
+            ctx.restore();
+        }
+        
+        // Draw feed and water stations
+        function drawStations() {
+            const feedLevel = currentData ? currentData.feed_level / 100 : 0.5;
+            const waterLevel = currentData ? currentData.water_level / 100 : 0.5;
+            
+            // Feed station (left inside barn)
+            drawStation(barnBounds.x + 50, barnBounds.floorY, feedLevel, '#8D6E63', '#FF9800');
+            
+            // Water station (right inside barn)
+            drawStation(barnBounds.x + barnBounds.width - 50, barnBounds.floorY, waterLevel, '#2196F3', '#64B5F6');
+        }
+        
+        // Draw a station (feed or water)
+        function drawStation(x, y, level, baseColor, fillColor) {
+            const stationWidth = 40;
+            const stationHeight = 60;
+            
+            // Station base
+            ctx.fillStyle = baseColor;
+            ctx.fillRect(x - stationWidth / 2, y - stationHeight, stationWidth, stationHeight);
+            
+            // Fill level
+            const fillHeight = stationHeight * level;
+            ctx.fillStyle = fillColor;
+            ctx.fillRect(x - stationWidth / 2 + 5, y - 5 - fillHeight, stationWidth - 10, fillHeight);
+            
+            // Station outline
+            ctx.strokeStyle = isDayTime ? '#333' : '#FFF';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x - stationWidth / 2, y - stationHeight, stationWidth, stationHeight);
+        }
+        
+        // Update sensor data
+        function updateSensorData() {
+            // Generate simulated data with slower changes
+            const baseTemp = 22.5;
+            const baseHumidity = 65;
+            const baseAmmonia = 12;
+            const baseActivity = isDayTime ? 40 : 15;
+            
+            if (!currentData) {
+                // Initialize with base values
+                currentData = {
+                    temperature: baseTemp,
+                    humidity: baseHumidity,
+                    ammonia: baseAmmonia,
+                    activity: baseActivity,
+                    feed_level: 75,
+                    water_level: 80,
+                    timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                };
+            } else {
+                // Update with gradual changes
+                currentData.temperature += (Math.random() - 0.5) * 0.5;
+                currentData.humidity += (Math.random() - 0.5) * 2;
+                currentData.ammonia += (Math.random() - 0.5) * 1;
+                currentData.activity += (Math.random() - 0.5) * 5;
+                currentData.feed_level += (Math.random() - 0.5) * 1;
+                currentData.water_level += (Math.random() - 0.5) * 1;
+                
+                // Clamp values to realistic ranges
+                currentData.temperature = Math.max(18, Math.min(30, currentData.temperature));
+                currentData.humidity = Math.max(40, Math.min(80, currentData.humidity));
+                currentData.ammonia = Math.max(5, Math.min(25, currentData.ammonia));
+                currentData.activity = Math.max(0, Math.min(100, currentData.activity));
+                currentData.feed_level = Math.max(0, Math.min(100, currentData.feed_level));
+                currentData.water_level = Math.max(0, Math.min(100, currentData.water_level));
+                
+                currentData.timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            }
+            
+            // Update display
+            updateSensorDisplay();
+        }
+        
+        // Update sensor display
+        function updateSensorDisplay() {
+            if (!currentData) return;
+            
+            // Update live overlay
+            document.getElementById('live-temp').textContent = currentData.temperature.toFixed(1) + '°C';
+            document.getElementById('live-humidity').textContent = currentData.humidity.toFixed(1) + '%';
+            document.getElementById('live-activity').textContent = currentData.activity.toFixed(1) + '%';
+            
+            // Update sensor cards
+            document.getElementById('sensor-temp').textContent = currentData.temperature.toFixed(1) + '°C';
+            document.getElementById('sensor-humidity').textContent = currentData.humidity.toFixed(1) + '%';
+            document.getElementById('sensor-ammonia').textContent = currentData.ammonia.toFixed(1) + ' ppm';
+            document.getElementById('sensor-activity').textContent = currentData.activity.toFixed(1) + '%';
+            document.getElementById('sensor-time').textContent = 'Updated: ' + currentData.timestamp;
+            
+            // Update last update time
+            document.getElementById('last-update').textContent = currentData.timestamp;
+            
+            // Update bird activity
+            updateBirdActivity(currentData.activity);
+        }
+        
+        // Update bird activity based on sensor data
+        function updateBirdActivity(activity) {
+            const activityFactor = activity / 100;
+            birds.forEach(bird => {
+                bird.speed = 0.1 + activityFactor * 0.2;
+            });
+        }
+        
+        // Update current time
+        function updateCurrentTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            
+            const timeElement = document.getElementById('current-time');
+            if (timeElement) {
+                timeElement.textContent = timeString;
+            }
+        }
+        
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize canvas
+            initCanvas();
+            
+            // Start time updates
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 1000);
+            
+            // Pause/Resume button
+            document.getElementById('pauseBtn')?.addEventListener('click', function() {
+                isPaused = !isPaused;
+                const icon = this.querySelector('i');
+                const text = this.querySelector('span');
+                
+                if (isPaused) {
+                    icon.className = 'fas fa-play me-2';
+                    text.textContent = 'Resume Simulation';
+                    this.classList.add('active');
+                } else {
+                    icon.className = 'fas fa-pause me-2';
+                    text.textContent = 'Pause Simulation';
+                    this.classList.remove('active');
+                }
+            });
+            
+            // Day/Night toggle button
+            document.getElementById('dayNightBtn')?.addEventListener('click', function() {
+                isDayTime = !isDayTime;
+                const icon = this.querySelector('i');
+                const text = this.querySelector('span');
+                
+                if (isDayTime) {
+                    icon.className = 'fas fa-sun me-2';
+                    text.textContent = 'Day Mode';
+                } else {
+                    icon.className = 'fas fa-moon me-2';
+                    text.textContent = 'Night Mode';
+                }
+                draw();
+            });
+            
+            // Refresh button
+            document.getElementById('refreshBtn')?.addEventListener('click', function() {
+                updateSensorData();
+            });
+            
+            // Initialize with simulated data if simulation is running
+            if ({{ simulator_running|yesno:"true,false" }}) {
+                setTimeout(() => {
+                    updateSensorData();
+                }, 1000);
+            }
+        });
+        
+        // Handle page visibility change
+        document.addEventListener('visibilitychange', function() {
+            isPaused = document.hidden;
+        });
+        
+        // Auto-refresh page if simulation is running
+        {% if simulator_running %}
+        let pageRefreshCountdown = 60;
+        
+        function updatePageRefreshTimer() {
+            const refreshElement = document.getElementById('last-update');
+            if (refreshElement) {
+                pageRefreshCountdown--;
+                
+                if (pageRefreshCountdown <= 0) {
+                    refreshElement.textContent = 'Refreshing page...';
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    setTimeout(updatePageRefreshTimer, 1000);
+                }
+            }
+        }
+        
+        setTimeout(updatePageRefreshTimer, 1000);
+        {% endif %}
+    </script>
+</body>
+</html>

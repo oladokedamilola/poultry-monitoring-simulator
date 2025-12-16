@@ -1,0 +1,8 @@
+Hi {{ user.username }},
+
+Please click the link below to activate your PoultraGuard account:
+
+http://{{ domain }}{% url 'users:activate' uidb64=uid token=token %}
+
+Thank you!
+PoultraGuard Team

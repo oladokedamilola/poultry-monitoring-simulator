@@ -1,0 +1,1159 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Home - Smart Poultry Monitoring{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="hero-title">
+                    Smart Poultry Monitoring 
+                    <span class="hero-highlight">Without the Hardware Cost</span>
+                </h1>
+                <p class="hero-subtitle">
+                    PoultraGuard simulates real-time poultry farm monitoring using virtual sensors. 
+                    Experience how smart poultry systems work — no IoT hardware required.
+                </p>
+                <div class="hero-actions">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'dashboard' %}" class="pg-btn pg-btn-primary btn-lg">
+                            <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                        </a>
+                        <a href="{% url 'flock:choose' %}" class="pg-btn pg-btn-ghost btn-lg">
+                            <i class="fas fa-play-circle me-2"></i>Start Simulation
+                        </a>
+                    {% else %}
+                        <a href="{% url 'register' %}" class="pg-btn pg-btn-primary btn-lg">
+                            <i class="fas fa-user-plus me-2"></i>Get Started Free
+                        </a>
+                        <a href="{% url 'login' %}" class="pg-btn pg-btn-ghost btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="hero-stats mt-5">
+                    <div class="row">
+                        <div class="col-4">
+                            <div class="stat-number">24/7</div>
+                            <div class="stat-label">Monitoring</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-number">5+</div>
+                            <div class="stat-label">Parameters</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-number">100%</div>
+                            <div class="stat-label">Simulated</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="hero-image-container">
+                    <!-- Image Carousel -->
+                    <div class="hero-carousel" id="heroCarousel">
+                        <!-- Image 1 -->
+                        <div class="carousel-slide active">
+                            <img src="{% static 'images/hero1.jpeg' %}" 
+                                 alt="Healthy chickens in a modern poultry farm"
+                                 class="hero-image">
+                        </div>
+                        <!-- Image 2 -->
+                        <div class="carousel-slide">
+                            <img src="{% static 'images/hero2.jpeg' %}" 
+                                 alt="Poultry farm with natural lighting"
+                                 class="hero-image">
+                        </div>
+                        <!-- Image 3 -->
+                        <div class="carousel-slide">
+                            <img src="{% static 'images/hero3.jpeg' %}" 
+                                 alt="Clean and organized poultry housing"
+                                 class="hero-image">
+                        </div>
+                        <!-- Image 4 -->
+                        <div class="carousel-slide">
+                            <img src="{% static 'images/hero4.jpeg' %}" 
+                                 alt="Chickens in their natural environment"
+                                 class="hero-image">
+                        </div>
+                        <!-- Image 5 -->
+                        <div class="carousel-slide">
+                            <img src="{% static 'images/hero5.jpeg' %}" 
+                                 alt="Well-maintained poultry farm interior"
+                                 class="hero-image">
+                        </div>
+                        <!-- Image 6 -->
+                        <div class="carousel-slide">
+                            <img src="{% static 'images/hero6.jpeg' %}" 
+                                 alt="Healthy flock in spacious housing"
+                                 class="hero-image">
+                        </div>
+                    </div>
+                    
+                    <!-- Carousel Controls -->
+                    <div class="carousel-controls">
+                        <button class="carousel-btn prev" aria-label="Previous image">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <div class="carousel-dots">
+                            <span class="dot active" data-slide="0"></span>
+                            <span class="dot" data-slide="1"></span>
+                            <span class="dot" data-slide="2"></span>
+                            <span class="dot" data-slide="3"></span>
+                            <span class="dot" data-slide="4"></span>
+                            <span class="dot" data-slide="5"></span>
+                        </div>
+                        <button class="carousel-btn next" aria-label="Next image">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Overlay Cards -->
+                    <div class="hero-image-overlay">
+                        <div class="overlay-card">
+                            <div class="overlay-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="overlay-text">Real-time Analytics</div>
+                        </div>
+                        <div class="overlay-card">
+                            <div class="overlay-icon">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <div class="overlay-text">Smart Alerts</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Hero Text Cards -->
+<section class="hero-text-cards py-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="text-card">
+                    <div class="text-card-icon">
+                        <i class="fas fa-feather-alt"></i>
+                    </div>
+                    <h3 class="text-card-title">Poultry Health Focused</h3>
+                    <p class="text-card-description">
+                        Monitor critical environmental factors that directly impact bird health, 
+                        welfare, and productivity in real-time.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="text-card">
+                    <div class="text-card-icon">
+                        <i class="fas fa-microchip"></i>
+                    </div>
+                    <h3 class="text-card-title">Hardware-Free Solution</h3>
+                    <p class="text-card-description">
+                        Experience full IoT monitoring capabilities without physical sensors. 
+                        Perfect for testing, training, and planning before hardware investment.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="text-card">
+                    <div class="text-card-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h3 class="text-card-title">Data-Driven Insights</h3>
+                    <p class="text-card-description">
+                        Gain valuable insights from historical data trends to optimize farm 
+                        management decisions and improve operational efficiency.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="how-it-works-section py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="section-title">How PoultraGuard Works</h2>
+            <p class="section-subtitle">A complete simulation of real poultry farm monitoring systems in three simple steps</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="work-step">
+                    <div class="step-number">1</div>
+                    <div class="step-icon">
+                        <i class="fas fa-microchip"></i>
+                    </div>
+                    <h4 class="step-title">Virtual Sensor Simulation</h4>
+                    <p class="step-description">
+                        Our advanced simulation engine generates realistic poultry farm data including temperature, 
+                        humidity, ammonia levels, feed status, and bird activity patterns.
+                    </p>
+                    <ul class="step-features">
+                        <li>Temperature monitoring</li>
+                        <li>Humidity tracking</li>
+                        <li>Ammonia level detection</li>
+                        <li>Bird activity simulation</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="work-step">
+                    <div class="step-number">2</div>
+                    <div class="step-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h4 class="step-title">Data Processing & Analysis</h4>
+                    <p class="step-description">
+                        Simulated data is stored and analyzed in real-time, with intelligent threshold checks 
+                        that trigger alerts for abnormal conditions before they become critical.
+                    </p>
+                    <ul class="step-features">
+                        <li>Real-time data processing</li>
+                        <li>Threshold violation detection</li>
+                        <li>Historical data storage</li>
+                        <li>Trend analysis</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="work-step">
+                    <div class="step-number">3</div>
+                    <div class="step-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h4 class="step-title">Live Visualization & Alerts</h4>
+                    <p class="step-description">
+                        Interactive dashboards display live charts, gauges, and alerts — 
+                        providing the same experience as a real IoT monitoring system.
+                    </p>
+                    <ul class="step-features">
+                        <li>Interactive charts & graphs</li>
+                        <li>Real-time alert notifications</li>
+                        <li>Mobile-responsive design</li>
+                        <li>Exportable reports</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="{% url 'flock:choose' %}" class="pg-btn pg-btn-primary btn-lg">
+                <i class="fas fa-play me-2"></i>Launch Live Simulation Demo
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="section-title">Comprehensive Monitoring Features</h2>
+            <p class="section-subtitle">Everything you need for effective poultry farm monitoring simulation</p>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Row 1 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-thermometer-half"></i>
+                    </div>
+                    <h5 class="feature-title">Temperature Monitoring</h5>
+                    <p class="feature-description">
+                        Track ambient temperature with configurable thresholds and receive alerts for 
+                        conditions outside optimal poultry health ranges.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-tint"></i>
+                    </div>
+                    <h5 class="feature-title">Humidity Control</h5>
+                    <p class="feature-description">
+                        Monitor humidity levels to prevent respiratory issues and maintain ideal 
+                        environmental conditions for poultry health.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-wind"></i>
+                    </div>
+                    <h5 class="feature-title">Ammonia Detection</h5>
+                    <p class="feature-description">
+                        Simulate ammonia level monitoring to ensure air quality remains within 
+                        safe limits for bird welfare and worker safety.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Row 2 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <h5 class="feature-title">Feed Management</h5>
+                    <p class="feature-description">
+                        Track feed consumption patterns and receive alerts when replenishment 
+                        is needed to ensure continuous supply.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-tint"></i>
+                    </div>
+                    <h5 class="feature-title">Water Supply Tracking</h5>
+                    <p class="feature-description">
+                        Monitor water consumption and system status to ensure proper hydration 
+                        and detect potential supply issues early.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-feather-alt"></i>
+                    </div>
+                    <h5 class="feature-title">Bird Activity Analysis</h5>
+                    <p class="feature-description">
+                        Simulate and analyze bird movement patterns to detect unusual behavior 
+                        that may indicate health or welfare issues.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Row 3 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <h5 class="feature-title">Historical Data Review</h5>
+                    <p class="feature-description">
+                        Access and analyze historical data to identify trends, patterns, and 
+                        optimize farm management practices over time.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <h5 class="feature-title">Smart Alert System</h5>
+                    <p class="feature-description">
+                        Receive instant notifications for abnormal conditions via the dashboard, 
+                        helping you respond quickly to potential issues.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h5 class="feature-title">Mobile Access</h5>
+                    <p class="feature-description">
+                        Monitor your virtual poultry farm from any device with our fully responsive 
+                        dashboard design.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section py-5">
+    <div class="container">
+        <div class="cta-card">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h2 class="cta-title">Ready to Experience Smart Poultry Monitoring?</h2>
+                    <p class="cta-text">
+                        Start monitoring your virtual poultry farm today. No hardware required, 
+                        just realistic simulation and powerful analytics to help you understand 
+                        modern poultry farm management.
+                    </p>
+                </div>
+                <div class="col-lg-4 text-lg-end">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'dashboard' %}" class="pg-btn pg-btn-primary btn-lg">
+                            Go to Dashboard <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                    {% else %}
+                        <a href="{% url 'register' %}" class="pg-btn pg-btn-primary btn-lg me-2">
+                            Start Free Trial
+                        </a>
+                        <a href="{% url 'login' %}" class="pg-btn pg-btn-ghost btn-lg">
+                            Login
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Hero Section Styles */
+    /* Add these styles to your existing CSS */
+
+/* Hero Carousel Styles */
+.hero-carousel {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    border-radius: var(--pg-radius-lg);
+    overflow: hidden;
+}
+
+.carousel-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.8s var(--pg-ease);
+    z-index: 1;
+}
+
+.carousel-slide.active {
+    opacity: 1;
+    z-index: 2;
+}
+
+.carousel-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--pg-radius-lg);
+}
+
+/* Carousel Controls */
+.carousel-controls {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    z-index: 3;
+}
+
+.carousel-btn {
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--pg-forest-green);
+    font-size: 1.2rem;
+    transition: all 0.3s var(--pg-ease);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.carousel-btn:hover {
+    background: white;
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.carousel-btn:active {
+    transform: scale(0.95);
+}
+
+.carousel-dots {
+    display: flex;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 8px 16px;
+    border-radius: 50px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(27, 94, 32, 0.3);
+    cursor: pointer;
+    transition: all 0.3s var(--pg-ease);
+}
+
+.dot.active {
+    background: var(--pg-forest-green);
+    transform: scale(1.2);
+}
+
+.dot:hover:not(.active) {
+    background: rgba(27, 94, 32, 0.6);
+    transform: scale(1.1);
+}
+
+/* Adjust overlay position for carousel */
+.hero-image-overlay {
+    position: absolute;
+    bottom: 80px; /* Increased to account for controls */
+    left: 20px;
+    right: 20px;
+    display: flex;
+    gap: 15px;
+    z-index: 3;
+}
+
+/* Responsive adjustments for carousel */
+@media (max-width: 768px) {
+    .hero-carousel {
+        height: 350px;
+    }
+    
+    .carousel-controls {
+        bottom: 15px;
+    }
+    
+    .carousel-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+    
+    .carousel-dots {
+        padding: 6px 12px;
+    }
+    
+    .dot {
+        width: 10px;
+        height: 10px;
+    }
+    
+    .hero-image-overlay {
+        bottom: 70px;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-carousel {
+        height: 300px;
+    }
+    
+    .carousel-controls {
+        gap: 15px;
+    }
+    
+    .carousel-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+    }
+    
+    .carousel-dots {
+        padding: 5px 10px;
+        gap: 8px;
+    }
+    
+    .dot {
+        width: 8px;
+        height: 8px;
+    }
+    
+    .hero-image-overlay {
+        bottom: 65px;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .overlay-card {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+    .hero-section {
+        padding: 5rem 0;
+        background: linear-gradient(135deg, rgba(27,94,32,0.03) 0%, rgba(255,255,255,0) 100%);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: var(--pg-text-primary);
+        line-height: 1.2;
+        margin-bottom: 1.5rem;
+    }
+    
+    .hero-highlight {
+        color: var(--pg-forest-green);
+        display: block;
+        font-size: 2.5rem;
+        margin-top: 0.5rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.25rem;
+        color: var(--pg-text-secondary);
+        line-height: 1.6;
+        margin-bottom: 2rem;
+        max-width: 600px;
+    }
+    
+    .hero-actions {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .hero-image-container {
+        position: relative;
+        border-radius: var(--pg-radius-lg);
+        overflow: hidden;
+        box-shadow: 0 25px 50px rgba(27,94,32,0.15);
+        transform: perspective(1000px) rotateY(-5deg);
+        transition: transform 0.3s var(--pg-ease);
+    }
+    
+    .hero-image-container:hover {
+        transform: perspective(1000px) rotateY(0deg);
+    }
+    
+    .hero-image {
+        width: 100%;
+        height: 400px;
+        object-fit: cover;
+        border-radius: var(--pg-radius-lg);
+    }
+    
+    .hero-image-overlay {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+        display: flex;
+        gap: 15px;
+    }
+    
+    .overlay-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: var(--pg-radius);
+        padding: 12px 18px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    .overlay-card:nth-child(2) {
+        animation-delay: 1s;
+    }
+    
+    .overlay-icon {
+        color: var(--pg-forest-green);
+        font-size: 1.2rem;
+    }
+    
+    .overlay-text {
+        font-weight: 600;
+        color: var(--pg-text-primary);
+        font-size: 0.9rem;
+    }
+    
+    .hero-stats {
+        max-width: 400px;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--pg-forest-green);
+        line-height: 1;
+    }
+    
+    .stat-label {
+        color: var(--pg-text-tertiary);
+        font-size: 0.9rem;
+        margin-top: 0.25rem;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    /* Hero Text Cards */
+    .hero-text-cards {
+        background: var(--pg-surface);
+        padding: 4rem 0;
+    }
+    
+    .text-card {
+        text-align: center;
+        padding: 2rem 1.5rem;
+        border-radius: var(--pg-radius);
+        background: var(--pg-bg);
+        border: 1px solid rgba(27,94,32,0.05);
+        height: 100%;
+        transition: all 0.3s var(--pg-ease);
+    }
+    
+    .text-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--pg-shadow);
+        border-color: rgba(27,94,32,0.1);
+    }
+    
+    .text-card-icon {
+        font-size: 2.5rem;
+        color: var(--pg-forest-green);
+        margin-bottom: 1.5rem;
+        width: 80px;
+        height: 80px;
+        background: rgba(27,94,32,0.08);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+    }
+    
+    .text-card-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--pg-text-primary);
+        margin-bottom: 1rem;
+    }
+    
+    .text-card-description {
+        color: var(--pg-text-secondary);
+        line-height: 1.6;
+        margin: 0;
+    }
+    
+    /* Section Titles */
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--pg-forest-green);
+        margin-bottom: 1rem;
+    }
+    
+    .section-subtitle {
+        font-size: 1.1rem;
+        color: var(--pg-text-tertiary);
+        max-width: 600px;
+        margin: 0 auto 2rem;
+    }
+    
+    /* How It Works */
+    .how-it-works-section {
+        background: linear-gradient(180deg, rgba(27,94,32,0.02) 0%, rgba(255,255,255,0) 100%);
+    }
+    
+    .work-step {
+        padding: 2.5rem 2rem;
+        border-radius: var(--pg-radius);
+        background: var(--pg-surface);
+        border: 1px solid rgba(27,94,32,0.05);
+        height: 100%;
+        transition: all 0.3s var(--pg-ease);
+        position: relative;
+        text-align: center;
+    }
+    
+    .work-step:hover {
+        transform: translateY(-10px);
+        box-shadow: var(--pg-shadow);
+        border-color: rgba(27,94,32,0.1);
+    }
+    
+    .step-number {
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 50px;
+        height: 50px;
+        background: var(--pg-forest-green);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1.5rem;
+        box-shadow: 0 5px 15px rgba(27,94,32,0.2);
+    }
+    
+    .step-icon {
+        font-size: 3rem;
+        color: var(--pg-forest-green);
+        margin-bottom: 1.5rem;
+    }
+    
+    .step-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--pg-text-primary);
+        margin-bottom: 1rem;
+    }
+    
+    .step-description {
+        color: var(--pg-text-secondary);
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+    
+    .step-features {
+        text-align: left;
+        padding-left: 1.5rem;
+        margin: 0;
+    }
+    
+    .step-features li {
+        color: var(--pg-text-tertiary);
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+        position: relative;
+    }
+    
+    .step-features li:before {
+        content: "✓";
+        color: var(--pg-forest-green);
+        font-weight: bold;
+        position: absolute;
+        left: -1.5rem;
+    }
+    
+    /* Features Section */
+    .features-section {
+        background: var(--pg-surface);
+    }
+    
+    .feature-card {
+        padding: 2rem 1.5rem;
+        border-radius: var(--pg-radius);
+        background: var(--pg-bg);
+        border: 1px solid rgba(27,94,32,0.05);
+        height: 100%;
+        transition: all 0.3s var(--pg-ease);
+        text-align: center;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--pg-shadow);
+        border-color: rgba(27,94,32,0.1);
+        background: var(--pg-surface);
+    }
+    
+    .feature-icon {
+        font-size: 2.5rem;
+        color: var(--pg-forest-green);
+        margin-bottom: 1.5rem;
+        width: 80px;
+        height: 80px;
+        background: rgba(27,94,32,0.08);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+    }
+    
+    .feature-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--pg-text-primary);
+        margin-bottom: 1rem;
+    }
+    
+    .feature-description {
+        color: var(--pg-text-secondary);
+        line-height: 1.6;
+        margin: 0;
+        font-size: 0.95rem;
+    }
+    
+    /* CTA Section */
+    .cta-section {
+        background: linear-gradient(135deg, var(--pg-forest-green) 0%, #1a511f 100%);
+        color: white;
+    }
+    
+    .cta-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: var(--pg-radius-lg);
+        padding: 3rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .cta-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 1rem;
+    }
+    
+    .cta-text {
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 0.9);
+        max-width: 600px;
+        line-height: 1.6;
+    }
+    
+    /* Responsive Styles */
+    @media (max-width: 992px) {
+        .hero-title {
+            font-size: 2.8rem;
+        }
+        
+        .hero-highlight {
+            font-size: 2rem;
+        }
+        
+        .hero-image-container {
+            transform: none;
+            margin-top: 3rem;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+        }
+        
+        .cta-title {
+            font-size: 1.8rem;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.2rem;
+        }
+        
+        .hero-highlight {
+            font-size: 1.6rem;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.1rem;
+        }
+        
+        .hero-actions {
+            flex-direction: column;
+        }
+        
+        .hero-actions .pg-btn {
+            width: 100%;
+        }
+        
+        .text-card, .work-step, .feature-card {
+            padding: 1.5rem 1rem;
+        }
+        
+        .cta-card {
+            padding: 2rem 1.5rem;
+            text-align: center;
+        }
+        
+        .cta-title {
+            font-size: 1.6rem;
+        }
+        
+        .cta-text {
+            font-size: 1rem;
+        }
+        
+        .cta-section .col-lg-4 {
+            margin-top: 1.5rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .hero-section {
+            padding: 3rem 0;
+        }
+        
+        .hero-title {
+            font-size: 1.8rem;
+        }
+        
+        .hero-highlight {
+            font-size: 1.4rem;
+        }
+        
+        .section-title {
+            font-size: 1.6rem;
+        }
+        
+        .hero-text-cards, .how-it-works-section, .features-section {
+            padding: 3rem 0;
+        }
+    }
+</style>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Hero Carousel functionality
+        const carousel = document.getElementById('heroCarousel');
+        const slides = carousel.querySelectorAll('.carousel-slide');
+        const dots = document.querySelectorAll('.carousel-dots .dot');
+        const prevBtn = document.querySelector('.carousel-btn.prev');
+        const nextBtn = document.querySelector('.carousel-btn.next');
+        
+        let currentSlide = 0;
+        let slideInterval;
+        const slideDuration = 5000; // 5 seconds per slide
+        
+        function showSlide(index) {
+            // Ensure index is within bounds
+            if (index < 0) index = slides.length - 1;
+            if (index >= slides.length) index = 0;
+            
+            // Remove active class from all slides and dots
+            slides.forEach(slide => slide.classList.remove('active'));
+            dots.forEach(dot => dot.classList.remove('active'));
+            
+            // Add active class to current slide and dot
+            slides[index].classList.add('active');
+            dots[index].classList.add('active');
+            
+            currentSlide = index;
+        }
+        
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+        
+        function prevSlide() {
+            showSlide(currentSlide - 1);
+        }
+        
+        function startAutoSlide() {
+            slideInterval = setInterval(nextSlide, slideDuration);
+        }
+        
+        function stopAutoSlide() {
+            clearInterval(slideInterval);
+        }
+        
+        // Event Listeners
+        if (prevBtn) {
+            prevBtn.addEventListener('click', function() {
+                prevSlide();
+                stopAutoSlide();
+                startAutoSlide(); // Restart auto-slide after manual interaction
+            });
+        }
+        
+        if (nextBtn) {
+            nextBtn.addEventListener('click', function() {
+                nextSlide();
+                stopAutoSlide();
+                startAutoSlide(); // Restart auto-slide after manual interaction
+            });
+        }
+        
+        // Dot click events
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', function() {
+                showSlide(index);
+                stopAutoSlide();
+                startAutoSlide(); // Restart auto-slide after manual interaction
+            });
+        });
+        
+        // Pause auto-slide on hover
+        if (carousel) {
+            carousel.addEventListener('mouseenter', stopAutoSlide);
+            carousel.addEventListener('mouseleave', startAutoSlide);
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') {
+                prevSlide();
+                stopAutoSlide();
+                startAutoSlide();
+            } else if (e.key === 'ArrowRight') {
+                nextSlide();
+                stopAutoSlide();
+                startAutoSlide();
+            }
+        });
+        
+        // Touch swipe support for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        if (carousel) {
+            carousel.addEventListener('touchstart', function(e) {
+                touchStartX = e.changedTouches[0].screenX;
+            });
+            
+            carousel.addEventListener('touchend', function(e) {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            });
+        }
+        
+        function handleSwipe() {
+            const swipeThreshold = 50; // Minimum swipe distance
+            
+            if (touchStartX - touchEndX > swipeThreshold) {
+                // Swipe left - next slide
+                nextSlide();
+                stopAutoSlide();
+                startAutoSlide();
+            } else if (touchEndX - touchStartX > swipeThreshold) {
+                // Swipe right - previous slide
+                prevSlide();
+                stopAutoSlide();
+                startAutoSlide();
+            }
+        }
+        
+        // Initialize
+        showSlide(0);
+        startAutoSlide();
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            stopAutoSlide();
+        });
+    });
+</script>
+{% endblock %}

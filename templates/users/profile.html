@@ -1,0 +1,821 @@
+<!-- users/profile.html -->
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<!-- Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    .profile-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .profile-preview {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .profile-form {
+        background: white;
+        border-radius: 10px;
+        padding: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .profile-image-container {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin: 0 auto 1.5rem;
+        border: 3px solid #007bff;
+        cursor: pointer;
+        background: #e9ecef;
+        position: relative;
+        transition: transform 0.3s ease;
+    }
+    
+    .profile-image-container:hover {
+        transform: scale(1.05);
+    }
+    
+    .profile-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    /* Custom Modal Styling */
+    .preview-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .preview-modal.show {
+        display: flex !important;
+        opacity: 1;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        max-width: 500px;
+        width: 90%;
+        text-align: center;
+        transform: translateY(-20px);
+        transition: transform 0.3s ease;
+    }
+    
+    .preview-modal.show .modal-content {
+        transform: translateY(0);
+    }
+    
+    .image-preview {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin: 1rem auto;
+        border: 3px solid #007bff;
+        background: #f8f9fa;
+    }
+    
+    .modal-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 1.5rem;
+    }
+    
+    .info-card {
+        background: white;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        border-left: 4px solid #007bff;
+    }
+    
+    .live-preview {
+        border: 2px solid #dee2e6;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 1rem;
+        background: #f8f9fa;
+        min-height: 50px;
+        transition: all 0.3s ease;
+    }
+    
+    .live-preview-updating {
+        background: #fff3cd;
+        border-color: #ffc107;
+    }
+    
+    .user-info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    
+    .info-item {
+        margin-bottom: 1.5rem;
+    }
+    
+    .info-label {
+        display: block;
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-bottom: 0.25rem;
+    }
+    
+    .info-value {
+        font-weight: 500;
+        color: #212529;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    .custom-file-upload {
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        padding: 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+    }
+    
+    .custom-file-upload:hover {
+        border-color: #007bff;
+        background: #e7f3ff;
+    }
+    
+    .custom-file-upload i {
+        font-size: 2rem;
+        color: #007bff;
+        margin-bottom: 1rem;
+    }
+    
+    .file-info {
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    
+    .current-image-info {
+        background: #e7f3ff;
+        border-radius: 5px;
+        padding: 1rem;
+        margin-top: 1rem;
+        border-left: 4px solid #007bff;
+    }
+    
+    .upload-area {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+    
+    .upload-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        border: 2px dashed #007bff;
+        border-radius: 10px;
+        background: #f0f8ff;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .upload-placeholder:hover {
+        background: #e6f2ff;
+        border-color: #0056b3;
+    }
+    
+    @media (max-width: 768px) {
+        .profile-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .user-info-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .modal-buttons {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">My Profile</h3>
+        <div class="text-muted">
+            <small>Last updated: {{ user.date_joined|date:"M d, Y" }}</small>
+        </div>
+    </div>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <div class="profile-container">
+        <!-- Left: Profile Preview -->
+        <div class="profile-preview">
+            <h4 class="mb-4">Profile Preview</h4>
+            
+            <div class="profile-image-container" id="imagePreviewContainer">
+                {% if user.profile.profile_image and user.profile.profile_image.url %}
+                    <img id="profile-preview-img" 
+                         src="{{ user.profile.profile_image.url }}" 
+                         alt="Profile Image" 
+                         class="profile-image">
+                {% else %}
+                    <img id="profile-preview-img" 
+                         src="https://ui-avatars.com/api/?name={{ user.first_name|default:user.username }}+{{ user.last_name|default:'' }}&background=007bff&color=fff&size=150" 
+                         alt="Profile Image" 
+                         class="profile-image">
+                {% endif %}
+                <div class="text-center mt-2">
+                    <small class="text-muted">Click to change profile picture</small>
+                </div>
+            </div>
+            
+            <div class="user-info-grid">
+                <div class="info-item">
+                    <span class="info-label">Username</span>
+                    <div class="info-value">{{ user.username }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <span class="info-label">Email</span>
+                    <div class="info-value">{{ user.email }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <span class="info-label">First Name</span>
+                    <div id="live-first-name" class="info-value live-preview">
+                        {{ user.first_name|default:"Not set" }}
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <span class="info-label">Last Name</span>
+                    <div id="live-last-name" class="info-value live-preview">
+                        {{ user.last_name|default:"Not set" }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <div class="info-item">
+                    <span class="info-label">Account Type</span>
+                    <div class="info-value">
+                        {% if user.is_staff %}
+                            <span class="badge bg-success">Administrator</span>
+                        {% else %}
+                            <span class="badge bg-info">Regular User</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <span class="info-label">Member Since</span>
+                    <div class="info-value">{{ user.date_joined|date:"F d, Y" }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right: Update Form -->
+        <div class="profile-form">
+            <h4 class="mb-4">Update Profile</h4>
+            
+            <form method="POST" enctype="multipart/form-data" id="profile-form">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                
+                <!-- Profile Image Upload Field -->
+                <div class="form-group">
+                    <label class="form-label">Profile Picture</label>
+                    
+                    <div class="upload-area">
+                        <div class="upload-placeholder" onclick="triggerFileInput()">
+                            <i class="fas fa-cloud-upload-alt fa-3x mb-3 text-primary"></i>
+                            <h5>Upload Profile Picture</h5>
+                            <p class="text-muted mb-2">Click here or drag & drop</p>
+                            <small class="text-muted">Supports: JPG, PNG, GIF, WebP (Max 5MB)</small>
+                        </div>
+                        
+                        <!-- Hidden file input -->
+                        <input type="file" 
+                               name="profile_image" 
+                               id="profile-image-input" 
+                               accept="image/*" 
+                               class="form-control d-none"
+                               onchange="handleImageSelect(event)">
+                    </div>
+                    
+                    <!-- File info display -->
+                    <div id="file-info" class="file-info mt-2">
+                        <div>
+                            <strong>Selected file:</strong> 
+                            <span id="selected-file-name" class="text-muted">None</span>
+                            <span id="file-size" class="ms-2"></span>
+                        </div>
+                        <div id="file-status" class="mt-1"></div>
+                    </div>
+                    
+                    <!-- Current image info -->
+                    {% if user.profile.profile_image and user.profile.profile_image.url %}
+                    <div class="current-image-info mt-3">
+                        <small>
+                            <i class="fas fa-info-circle me-1"></i>
+                            Current image will be replaced when you upload a new one.
+                        </small>
+                    </div>
+                    {% endif %}
+                    
+                    {% if form.profile_image.errors %}
+                        <div class="text-danger mt-1">
+                            {% for error in form.profile_image.errors %}
+                                <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- First Name field -->
+                <div class="form-group">
+                    <label for="id_first_name" class="form-label">First Name</label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                        <div class="text-danger mt-1">
+                            {% for error in form.first_name.errors %}
+                                <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Last Name field -->
+                <div class="form-group">
+                    <label for="id_last_name" class="form-label">Last Name</label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                        <div class="text-danger mt-1">
+                            {% for error in form.last_name.errors %}
+                                <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mt-4 pt-3 border-top">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="fas fa-save me-2"></i>Save Changes
+                    </button>
+                    <a href="{% url 'profile' %}" class="btn btn-outline-secondary ms-2">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                </div>
+            </form>
+            
+            <div class="mt-4 pt-3 border-top">
+                <h6 class="mb-3">Account Information</h6>
+                <div class="alert alert-info">
+                    <small>
+                        <i class="fas fa-info-circle me-2"></i>
+                        Username and email cannot be changed here. 
+                        Please contact support if you need to update these details.
+                    </small>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <small class="text-muted">Username</small>
+                        <div class="fw-bold">{{ user.username }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted">Email</small>
+                        <div class="fw-bold">{{ user.email }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Preview Modal -->
+<div id="imagePreviewModal" class="preview-modal">
+    <div class="modal-content">
+        <h5>Preview Profile Image</h5>
+        <div class="image-preview">
+            <img id="modal-preview-img" src="" alt="Preview" class="profile-image">
+        </div>
+        <p class="text-muted">This will be your new profile picture</p>
+        <div class="modal-buttons">
+            <button type="button" class="btn btn-secondary" onclick="changeImage()">
+                <i class="fas fa-exchange-alt me-2"></i>Change Image
+            </button>
+            <button type="button" class="btn btn-primary" onclick="confirmImage()">
+                <i class="fas fa-check me-2"></i>Use This Image
+            </button>
+        </div>
+        <button type="button" class="btn btn-outline-danger mt-3" onclick="cancelImage()">
+            <i class="fas fa-times me-2"></i>Cancel
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Bootstrap JS Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Debug function
+    function debug(message) {
+        console.log('DEBUG:', message);
+    }
+    
+    // Trigger file input
+    function triggerFileInput() {
+        debug('Triggering file input');
+        const fileInput = document.getElementById('profile-image-input');
+        if (fileInput) {
+            fileInput.click();
+        }
+    }
+    
+    // Handle image selection
+    function handleImageSelect(event) {
+        debug('Image selected event triggered');
+        const fileInput = event.target;
+        
+        if (fileInput.files && fileInput.files[0]) {
+            const file = fileInput.files[0];
+            debug(`File selected: ${file.name}, Size: ${file.size}, Type: ${file.type}`);
+            
+            // Display file info
+            updateFileInfo(file);
+            
+            // Validate file
+            if (!validateImageFile(file)) {
+                fileInput.value = '';
+                return;
+            }
+            
+            // Show preview modal
+            showImagePreview(file);
+        } else {
+            debug('No file selected');
+        }
+    }
+    
+    // Update file information display
+    function updateFileInfo(file) {
+        const fileNameDisplay = document.getElementById('selected-file-name');
+        const fileSizeDisplay = document.getElementById('file-size');
+        const fileStatus = document.getElementById('file-status');
+        
+        if (fileNameDisplay) {
+            fileNameDisplay.textContent = file.name;
+            fileNameDisplay.className = 'text-primary fw-bold';
+        }
+        
+        if (fileSizeDisplay) {
+            const sizeInMB = (file.size / 1024 / 1024).toFixed(2);
+            fileSizeDisplay.textContent = `(${sizeInMB} MB)`;
+        }
+        
+        if (fileStatus) {
+            fileStatus.innerHTML = '<span class="text-success"><i class="fas fa-check-circle me-1"></i>File selected and valid</span>';
+        }
+    }
+    
+    // Validate image file
+    function validateImageFile(file) {
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        
+        if (!validTypes.includes(file.type)) {
+            alert('❌ Please select a valid image file (JPEG, PNG, GIF, or WebP).');
+            resetFileInfo();
+            return false;
+        }
+        
+        if (file.size > maxSize) {
+            alert('❌ Image size must be less than 5MB.');
+            resetFileInfo();
+            return false;
+        }
+        
+        return true;
+    }
+    
+    // Reset file information
+    function resetFileInfo() {
+        const fileNameDisplay = document.getElementById('selected-file-name');
+        const fileSizeDisplay = document.getElementById('file-size');
+        const fileStatus = document.getElementById('file-status');
+        
+        if (fileNameDisplay) {
+            fileNameDisplay.textContent = 'None';
+            fileNameDisplay.className = 'text-muted';
+        }
+        
+        if (fileSizeDisplay) {
+            fileSizeDisplay.textContent = '';
+        }
+        
+        if (fileStatus) {
+            fileStatus.innerHTML = '';
+        }
+    }
+    
+    // Show image preview modal
+    function showImagePreview(file) {
+        debug('Showing image preview modal');
+        const modal = document.getElementById('imagePreviewModal');
+        const modalImg = document.getElementById('modal-preview-img');
+        
+        if (!modal || !modalImg) {
+            debug('Modal or modal image not found');
+            alert('Error: Preview modal not found');
+            return;
+        }
+        
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            debug('FileReader loaded image');
+            modalImg.src = e.target.result;
+            
+            // Show modal with animation
+            modal.classList.add('show');
+            debug('Modal class added: ' + modal.className);
+            
+            // Prevent body scrolling when modal is open
+            document.body.style.overflow = 'hidden';
+        };
+        
+        reader.onerror = function() {
+            debug('Error reading file');
+            alert('❌ Error reading the image file. Please try again.');
+            resetFileInfo();
+            document.getElementById('profile-image-input').value = '';
+        };
+        
+        reader.readAsDataURL(file);
+    }
+    
+    // Confirm image selection
+    function confirmImage() {
+        debug('Confirming image selection');
+        const modalImg = document.getElementById('modal-preview-img').src;
+        const previewImg = document.getElementById('profile-preview-img');
+        
+        if (previewImg && modalImg) {
+            previewImg.src = modalImg;
+            
+            // Add visual feedback
+            previewImg.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                previewImg.style.transform = 'scale(1)';
+            }, 300);
+            
+            // Update file status
+            const fileStatus = document.getElementById('file-status');
+            if (fileStatus) {
+                fileStatus.innerHTML = '<span class="text-success"><i class="fas fa-check-circle me-1"></i>Ready to save with profile</span>';
+            }
+        }
+        
+        closeModal();
+    }
+    
+    // Change image (open file picker again)
+    function changeImage() {
+        debug('Changing image');
+        closeModal();
+        
+        // Clear the current file input
+        const fileInput = document.getElementById('profile-image-input');
+        if (fileInput) {
+            fileInput.value = '';
+            resetFileInfo();
+        }
+        
+        // Open file picker after a short delay
+        setTimeout(() => {
+            triggerFileInput();
+        }, 300);
+    }
+    
+    // Cancel image selection
+    function cancelImage() {
+        debug('Canceling image selection');
+        closeModal();
+        
+        // Clear the file input and reset info
+        const fileInput = document.getElementById('profile-image-input');
+        if (fileInput) {
+            fileInput.value = '';
+            resetFileInfo();
+        }
+    }
+    
+    // Close modal
+    function closeModal() {
+        debug('Closing modal');
+        const modal = document.getElementById('imagePreviewModal');
+        if (modal) {
+            modal.classList.remove('show');
+            
+            // Restore body scrolling
+            document.body.style.overflow = 'auto';
+            
+            // Reset modal image after animation
+            setTimeout(() => {
+                const modalImg = document.getElementById('modal-preview-img');
+                if (modalImg) {
+                    modalImg.src = '';
+                }
+            }, 300);
+        }
+    }
+    
+    // Close modal when clicking outside
+    document.addEventListener('click', function(event) {
+        const modal = document.getElementById('imagePreviewModal');
+        if (modal && modal.classList.contains('show') && event.target === modal) {
+            cancelImage();
+        }
+    });
+    
+    // Close modal with ESC key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            const modal = document.getElementById('imagePreviewModal');
+            if (modal && modal.classList.contains('show')) {
+                cancelImage();
+            }
+        }
+    });
+    
+    // Real-time preview update for names
+    document.addEventListener('DOMContentLoaded', function() {
+        debug('DOM loaded');
+        
+        const firstNameInput = document.getElementById('id_first_name');
+        const lastNameInput = document.getElementById('id_last_name');
+        const liveFirstName = document.getElementById('live-first-name');
+        const liveLastName = document.getElementById('live-last-name');
+        
+        // Update first name preview
+        if (firstNameInput && liveFirstName) {
+            firstNameInput.addEventListener('input', function() {
+                const value = this.value.trim();
+                liveFirstName.textContent = value || 'Not set';
+                liveFirstName.classList.add('live-preview-updating');
+                
+                setTimeout(() => {
+                    liveFirstName.classList.remove('live-preview-updating');
+                }, 300);
+            });
+        }
+        
+        // Update last name preview
+        if (lastNameInput && liveLastName) {
+            lastNameInput.addEventListener('input', function() {
+                const value = this.value.trim();
+                liveLastName.textContent = value || 'Not set';
+                liveLastName.classList.add('live-preview-updating');
+                
+                setTimeout(() => {
+                    liveLastName.classList.remove('live-preview-updating');
+                }, 300);
+            });
+        }
+        
+        // Make preview image clickable
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        if (previewContainer) {
+            previewContainer.addEventListener('click', triggerFileInput);
+        }
+        
+        // Add drag and drop support
+        const uploadArea = document.querySelector('.upload-placeholder');
+        if (uploadArea) {
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#0056b3';
+                this.style.background = '#e6f2ff';
+            });
+            
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#007bff';
+                this.style.background = '#f0f8ff';
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#007bff';
+                this.style.background = '#f0f8ff';
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const fileInput = document.getElementById('profile-image-input');
+                    if (fileInput) {
+                        // Create a new DataTransfer object
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(files[0]);
+                        fileInput.files = dataTransfer.files;
+                        
+                        // Trigger change event
+                        const event = new Event('change', { bubbles: true });
+                        fileInput.dispatchEvent(event);
+                    }
+                }
+            });
+        }
+    });
+    
+    // Form validation
+    document.getElementById('profile-form')?.addEventListener('submit', function(e) {
+        debug('Form submission');
+        
+        const firstName = document.getElementById('id_first_name')?.value.trim();
+        const lastName = document.getElementById('id_last_name')?.value.trim();
+        const imageInput = document.getElementById('profile-image-input');
+        
+        // Validate name length
+        if (firstName && firstName.length > 30) {
+            e.preventDefault();
+            alert('First name must be less than 30 characters');
+            return false;
+        }
+        
+        if (lastName && lastName.length > 30) {
+            e.preventDefault();
+            alert('Last name must be less than 30 characters');
+            return false;
+        }
+        
+        // Validate image if selected
+        if (imageInput && imageInput.files.length > 0) {
+            const file = imageInput.files[0];
+            if (!validateImageFile(file)) {
+                e.preventDefault();
+                return false;
+            }
+        }
+        
+        // Add loading state to submit button
+        const submitBtn = this.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+            submitBtn.disabled = true;
+        }
+        
+        return true;
+    });
+    
+    // Add initial debug message
+    debug('Profile page script loaded');
+</script>
+{% endblock %}

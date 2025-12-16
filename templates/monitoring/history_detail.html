@@ -1,0 +1,1064 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+{% block title %}History – {{ block.name }}{% endblock %}
+
+{% block content %}
+<div class="container-wide py-4">
+    
+    <!-- Page Header with Breadcrumb -->
+    <div class="history-detail-header mb-4">
+        <div class="d-flex align-items-center mb-2">
+            <a href="{% url 'history_blocks' %}" class="pg-small pg-muted me-2" style="text-decoration: none;">
+                <i class="fas fa-arrow-left me-1"></i>Back to History
+            </a>
+        </div>
+        
+        <div class="header-content">
+            <h1 style="color:var(--pg-forest-green)" class="mb-1">{{ block.name }}</h1>
+            <div class="pg-small pg-muted">
+                <span class="me-3"><i class="fas fa-dove me-1"></i>{{ block.number_of_birds }} birds</span>
+                <span class="me-3"><i class="fas fa-dna me-1"></i>{{ block.get_breed_display }}</span>
+                <span><i class="fas fa-calendar-alt me-1"></i>{{ block.get_age_group_display }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="history-stats-overview mb-4">
+        <div class="row g-3">
+            <div class="col-6 col-md-3">
+                <div class="stat-card mini">
+                    <div class="stat-icon">
+                        <i class="fas fa-thermometer-half"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">{{ avg_temperature|default:"0.0"|floatformat:1 }}°C</div>
+                        <div class="stat-label">Avg Temp</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card mini">
+                    <div class="stat-icon">
+                        <i class="fas fa-tint"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">{{ avg_humidity|default:"0.0"|floatformat:1 }}%</div>
+                        <div class="stat-label">Avg Humidity</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card mini">
+                    <div class="stat-icon">
+                        <i class="fas fa-wind"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">{{ avg_ammonia|default:"0.0"|floatformat:1 }} ppm</div>
+                        <div class="stat-label">Avg Ammonia</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card mini">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">{{ data_points|default:"0" }}</div>
+                        <div class="stat-label">Data Points</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Time Range Selector - Enhanced -->
+    <div class="time-range-selector mb-5">
+        <div class="selector-header">
+            <h5 class="mb-2">Time Range</h5>
+            <div class="pg-small pg-muted">Select period to analyze</div>
+        </div>
+        
+        <form method="GET" class="range-form">
+            <div class="range-options">
+                {% for option in range_options %}
+                <input type="radio" name="range" id="range_{{ option.value }}" 
+                       value="{{ option.value }}" 
+                       {% if range_option == option.value %}checked{% endif %}
+                       onchange="this.form.submit()">
+                <label for="range_{{ option.value }}" class="range-option">
+                    {{ option.label }}
+                </label>
+                {% endfor %}
+            </div>
+            
+            <!-- Custom date range (optional) -->
+            <div class="custom-range mt-3" id="customRangeContainer" style="display: none;">
+                <div class="row g-2">
+                    <div class="col-md-5">
+                        <label class="pg-small">From</label>
+                        <input type="date" name="from_date" class="form-control">
+                    </div>
+                    <div class="col-md-5">
+                        <label class="pg-small">To</label>
+                        <input type="date" name="to_date" class="form-control">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="pg-btn pg-btn-ghost w-100">Apply</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-end mt-2">
+                <button type="button" class="pg-btn pg-btn-ghost pg-btn-sm" id="toggleCustomRange">
+                    <i class="fas fa-calendar-alt me-1"></i>Custom Range
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Charts Grid with Toggle -->
+    <div class="charts-section">
+        <div class="section-header mb-4">
+            <h4>Monitoring Charts</h4>
+            <div class="chart-toggle">
+                <button class="toggle-btn" data-view="grid">
+                    <i class="fas fa-th"></i>
+                </button>
+                <button class="toggle-btn active" data-view="list">
+                    <i class="fas fa-list"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Grid View (Hidden by default on mobile) -->
+        <div class="charts-grid" id="gridView" style="display: none;">
+            <div class="row g-4">
+                <!-- Temperature Chart -->
+                <div class="col-lg-6">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <div class="chart-title">
+                                <i class="fas fa-thermometer-half me-2"></i>
+                                Temperature
+                            </div>
+                            <div class="chart-stats">
+                                <span class="stat-badge" id="tempStats">Avg: {{ avg_temperature|default:"0.0"|floatformat:1 }}°C</span>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chartTemp"></canvas>
+                        </div>
+                        <div class="chart-footer">
+                            <div class="pg-small pg-muted">Optimal: 28°C - 34°C</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Humidity Chart -->
+                <div class="col-lg-6">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <div class="chart-title">
+                                <i class="fas fa-tint me-2"></i>
+                                Humidity
+                            </div>
+                            <div class="chart-stats">
+                                <span class="stat-badge" id="humidityStats">Avg: {{ avg_humidity|default:"0.0"|floatformat:1 }}%</span>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chartHumidity"></canvas>
+                        </div>
+                        <div class="chart-footer">
+                            <div class="pg-small pg-muted">Optimal: 50% - 85%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ammonia Chart -->
+                <div class="col-lg-6">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <div class="chart-title">
+                                <i class="fas fa-wind me-2"></i>
+                                Ammonia Level
+                            </div>
+                            <div class="chart-stats">
+                                <span class="stat-badge" id="ammoniaStats">Avg: {{ avg_ammonia|default:"0.0"|floatformat:1 }} ppm</span>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chartAmmonia"></canvas>
+                        </div>
+                        <div class="chart-footer">
+                            <div class="pg-small pg-muted">Critical above 25 ppm</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feed Level Chart -->
+                <div class="col-lg-6">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <div class="chart-title">
+                                <i class="fas fa-utensils me-2"></i>
+                                Feed Level
+                            </div>
+                            <div class="chart-stats">
+                                <span class="stat-badge" id="feedStats">Avg: {{ avg_feed|default:"0.0"|floatformat:1 }}%</span>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chartFeed"></canvas>
+                        </div>
+                        <div class="chart-footer">
+                            <div class="pg-small pg-muted">Alert below 20%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Water Level Chart -->
+                <div class="col-lg-6">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <div class="chart-title">
+                                <i class="fas fa-tint me-2"></i>
+                                Water Level
+                            </div>
+                            <div class="chart-stats">
+                                <span class="stat-badge" id="waterStats">Avg: {{ avg_water|default:"0.0"|floatformat:1 }}%</span>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chartWater"></canvas>
+                        </div>
+                        <div class="chart-footer">
+                            <div class="pg-small pg-muted">Alert below 20%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Chart -->
+                <div class="col-lg-6">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <div class="chart-title">
+                                <i class="fas fa-running me-2"></i>
+                                Activity Level
+                            </div>
+                            <div class="chart-stats">
+                                <span class="stat-badge" id="activityStats">Avg: {{ avg_activity|default:"0.0"|floatformat:1 }}%</span>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chartActivity"></canvas>
+                        </div>
+                        <div class="chart-footer">
+                            <div class="pg-small pg-muted">Low activity below 30%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- List View (Visible by default on mobile) -->
+        <div class="charts-list" id="listView">
+            <div class="list-container">
+                <div class="list-chart-item">
+                    <div class="list-chart-header" data-toggle="collapse" data-target="#chartTempList">
+                        <div class="list-chart-title">
+                            <i class="fas fa-thermometer-half me-2"></i>
+                            Temperature
+                        </div>
+                        <div class="list-chart-stats">
+                            <span class="stat-badge">Avg: {{ avg_temperature|default:"0.0"|floatformat:1 }}°C</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="collapse show" id="chartTempList">
+                        <div class="list-chart-content">
+                            <canvas id="chartTempMobile" class="list-chart-canvas"></canvas>
+                            <div class="list-chart-footer pg-small pg-muted">
+                                Optimal: 28°C - 34°C
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="list-chart-item">
+                    <div class="list-chart-header" data-toggle="collapse" data-target="#chartHumidityList">
+                        <div class="list-chart-title">
+                            <i class="fas fa-tint me-2"></i>
+                            Humidity
+                        </div>
+                        <div class="list-chart-stats">
+                            <span class="stat-badge">Avg: {{ avg_humidity|default:"0.0"|floatformat:1 }}%</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="collapse show" id="chartHumidityList">
+                        <div class="list-chart-content">
+                            <canvas id="chartHumidityMobile" class="list-chart-canvas"></canvas>
+                            <div class="list-chart-footer pg-small pg-muted">
+                                Optimal: 50% - 85%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="list-chart-item">
+                    <div class="list-chart-header" data-toggle="collapse" data-target="#chartAmmoniaList">
+                        <div class="list-chart-title">
+                            <i class="fas fa-wind me-2"></i>
+                            Ammonia Level
+                        </div>
+                        <div class="list-chart-stats">
+                            <span class="stat-badge">Avg: {{ avg_ammonia|default:"0.0"|floatformat:1 }} ppm</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="collapse show" id="chartAmmoniaList">
+                        <div class="list-chart-content">
+                            <canvas id="chartAmmoniaMobile" class="list-chart-canvas"></canvas>
+                            <div class="list-chart-footer pg-small pg-muted">
+                                Critical above 25 ppm
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="list-chart-item">
+                    <div class="list-chart-header" data-toggle="collapse" data-target="#chartFeedList">
+                        <div class="list-chart-title">
+                            <i class="fas fa-utensils me-2"></i>
+                            Feed Level
+                        </div>
+                        <div class="list-chart-stats">
+                            <span class="stat-badge">Avg: {{ avg_feed|default:"0.0"|floatformat:1 }}%</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="collapse show" id="chartFeedList">
+                        <div class="list-chart-content">
+                            <canvas id="chartFeedMobile" class="list-chart-canvas"></canvas>
+                            <div class="list-chart-footer pg-small pg-muted">
+                                Alert below 20%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="list-chart-item">
+                    <div class="list-chart-header" data-toggle="collapse" data-target="#chartWaterList">
+                        <div class="list-chart-title">
+                            <i class="fas fa-tint me-2"></i>
+                            Water Level
+                        </div>
+                        <div class="list-chart-stats">
+                            <span class="stat-badge">Avg: {{ avg_water|default:"0.0"|floatformat:1 }}%</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="collapse show" id="chartWaterList">
+                        <div class="list-chart-content">
+                            <canvas id="chartWaterMobile" class="list-chart-canvas"></canvas>
+                            <div class="list-chart-footer pg-small pg-muted">
+                                Alert below 20%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="list-chart-item">
+                    <div class="list-chart-header" data-toggle="collapse" data-target="#chartActivityList">
+                        <div class="list-chart-title">
+                            <i class="fas fa-running me-2"></i>
+                            Activity Level
+                        </div>
+                        <div class="list-chart-stats">
+                            <span class="stat-badge">Avg: {{ avg_activity|default:"0.0"|floatformat:1 }}%</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="collapse show" id="chartActivityList">
+                        <div class="list-chart-content">
+                            <canvas id="chartActivityMobile" class="list-chart-canvas"></canvas>
+                            <div class="list-chart-footer pg-small pg-muted">
+                                Low activity below 30%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+
+<style>
+    /* History Detail Styles */
+    .history-detail-header {
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(27,94,32,0.08);
+    }
+
+    .header-content h1 {
+        font-size: 2rem;
+        font-weight: 700;
+    }
+
+    /* Stats Overview */
+    .stat-card.mini {
+        background: var(--pg-surface);
+        border: 1px solid rgba(27,94,32,0.05);
+        border-radius: var(--pg-radius);
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        height: 100%;
+        transition: all 0.2s var(--pg-ease);
+    }
+
+    .stat-card.mini:hover {
+        border-color: rgba(27,94,32,0.1);
+        transform: translateY(-2px);
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        background: rgba(27,94,32,0.08);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--pg-forest-green);
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .stat-content {
+        flex: 1;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--pg-forest-green);
+        line-height: 1;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        font-size: 0.85rem;
+        color: var(--pg-text-tertiary);
+    }
+
+    /* Time Range Selector */
+    .time-range-selector {
+        background: rgba(27,94,32,0.03);
+        border-radius: var(--pg-radius);
+        padding: 1.5rem;
+    }
+
+    .range-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .range-options input[type="radio"] {
+        display: none;
+    }
+
+    .range-option {
+        padding: 0.5rem 1rem;
+        background: var(--pg-surface);
+        border: 1px solid rgba(27,94,32,0.1);
+        border-radius: var(--pg-radius);
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--pg-text-secondary);
+        cursor: pointer;
+        transition: all 0.2s var(--pg-ease);
+        user-select: none;
+    }
+
+    .range-option:hover {
+        border-color: var(--pg-forest-green);
+        color: var(--pg-forest-green);
+    }
+
+    .range-options input[type="radio"]:checked + .range-option {
+        background: var(--pg-forest-green);
+        color: white;
+        border-color: var(--pg-forest-green);
+    }
+
+    /* Charts Section */
+    .charts-section {
+        margin-top: 2rem;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .chart-toggle {
+        display: flex;
+        gap: 0.25rem;
+        background: rgba(27,94,32,0.05);
+        padding: 0.25rem;
+        border-radius: var(--pg-radius);
+    }
+
+    .toggle-btn {
+        background: transparent;
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--pg-text-tertiary);
+        cursor: pointer;
+        transition: all 0.2s var(--pg-ease);
+    }
+
+    .toggle-btn:hover {
+        color: var(--pg-forest-green);
+    }
+
+    .toggle-btn.active {
+        background: var(--pg-surface);
+        color: var(--pg-forest-green);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    /* Chart Cards */
+    .chart-card {
+        background: var(--pg-surface);
+        border: 1px solid rgba(27,94,32,0.05);
+        border-radius: var(--pg-radius);
+        padding: 1.5rem;
+        height: 100%;
+        transition: all 0.3s var(--pg-ease);
+    }
+
+    .chart-card:hover {
+        border-color: rgba(27,94,32,0.1);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(27,94,32,0.08);
+    }
+
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .chart-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--pg-text-primary);
+        display: flex;
+        align-items: center;
+    }
+
+    .chart-title i {
+        color: var(--pg-forest-green);
+    }
+
+    .stat-badge {
+        padding: 0.25rem 0.75rem;
+        background: rgba(27,94,32,0.08);
+        color: var(--pg-forest-green);
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 200px;
+        margin: 0 -0.5rem;
+    }
+
+    .chart-footer {
+        margin-top: 1rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid rgba(27,94,32,0.05);
+    }
+
+    /* List View */
+    .list-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .list-chart-item {
+        background: var(--pg-surface);
+        border: 1px solid rgba(27,94,32,0.05);
+        border-radius: var(--pg-radius);
+        overflow: hidden;
+    }
+
+    .list-chart-header {
+        padding: 1rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        transition: background 0.2s var(--pg-ease);
+    }
+
+    .list-chart-header:hover {
+        background: rgba(27,94,32,0.02);
+    }
+
+    .list-chart-title {
+        font-weight: 600;
+        color: var(--pg-text-primary);
+        display: flex;
+        align-items: center;
+    }
+
+    .list-chart-stats {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .list-chart-stats i {
+        transition: transform 0.3s var(--pg-ease);
+    }
+
+    .list-chart-header[aria-expanded="true"] .fa-chevron-down {
+        transform: rotate(180deg);
+    }
+
+    .list-chart-content {
+        padding: 1.5rem;
+        border-top: 1px solid rgba(27,94,32,0.05);
+    }
+
+    .list-chart-canvas {
+        width: 100% !important;
+        height: 200px !important;
+    }
+
+    /* Mobile-first approach */
+    @media (min-width: 992px) {
+        .charts-grid {
+            display: block !important;
+        }
+        .charts-list {
+            display: none !important;
+        }
+        
+        .toggle-btn[data-view="grid"] {
+            background: var(--pg-surface);
+            color: var(--pg-forest-green);
+        }
+    }
+
+    @media (max-width: 992px) {
+        .header-content h1 {
+            font-size: 1.75rem;
+        }
+
+        .chart-container {
+            height: 180px;
+        }
+        
+        .list-chart-canvas {
+            height: 180px !important;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .history-detail-header {
+            padding-bottom: 0.75rem;
+        }
+
+        .header-content h1 {
+            font-size: 1.5rem;
+        }
+
+        .stat-card.mini {
+            padding: 0.75rem;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+        }
+
+        .time-range-selector {
+            padding: 1rem;
+        }
+
+        .range-option {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.85rem;
+            flex: 1;
+            min-width: calc(50% - 0.25rem);
+            text-align: center;
+        }
+
+        .chart-card {
+            padding: 1rem;
+        }
+
+        .chart-container {
+            height: 160px;
+        }
+        
+        .list-chart-canvas {
+            height: 160px !important;
+        }
+
+        .section-header h4 {
+            font-size: 1.25rem;
+        }
+
+        .data-actions .pg-card .row {
+            text-align: center;
+        }
+
+        .data-actions .col-md-4 {
+            margin-top: 1rem;
+        }
+        
+        .list-chart-header {
+            padding: 0.875rem 1rem;
+        }
+
+        .list-chart-content {
+            padding: 1rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .header-content h1 {
+            font-size: 1.35rem;
+        }
+
+        .stat-card.mini {
+            flex-direction: column;
+            text-align: center;
+            gap: 0.5rem;
+        }
+
+        .stat-icon {
+            margin: 0 auto;
+        }
+
+        .range-option {
+            min-width: calc(100% - 0.25rem);
+        }
+
+        .chart-container {
+            height: 150px;
+        }
+        
+        .list-chart-canvas {
+            height: 150px !important;
+        }
+
+        .chart-header {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .list-chart-header {
+            padding: 0.875rem 1rem;
+        }
+
+        .list-chart-content {
+            padding: 1rem;
+        }
+    }
+
+    @media (max-width: 375px) {
+        .stat-value {
+            font-size: 1.1rem;
+        }
+
+        .chart-container {
+            height: 140px;
+        }
+        
+        .list-chart-canvas {
+            height: 140px !important;
+        }
+
+        .toggle-btn {
+            width: 32px;
+            height: 32px;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if history_json exists and is valid
+        {% if history_json %}
+            try {
+                const history = JSON.parse(`{{ history_json|safe }}`);
+                initializeCharts(history);
+            } catch (error) {
+                console.error('Error parsing history data:', error);
+                showNoDataMessage();
+            }
+        {% else %}
+            showNoDataMessage();
+        {% endif %}
+
+        function initializeCharts(history) {
+            if (!history || history.length === 0) {
+                showNoDataMessage();
+                return;
+            }
+
+            // Format labels based on time range
+            function formatLabels(timestamps) {
+                const range = '{{ range_option|default:"24h" }}';
+                const isLongRange = range.includes('d');
+                
+                return timestamps.map(ts => {
+                    const date = new Date(ts);
+                    if (isLongRange) {
+                        return date.toLocaleDateString([], { 
+                            month: 'short', 
+                            day: 'numeric',
+                            hour: '2-digit'
+                        });
+                    } else {
+                        return date.toLocaleTimeString([], {
+                            hour: '2-digit', 
+                            minute: '2-digit'
+                        });
+                    }
+                });
+            }
+
+            const labels = formatLabels(history.map(x => x.timestamp));
+
+            // Chart colors
+            const chartColors = {
+                temperature: 'rgba(27, 94, 32, 0.9)',
+                humidity: 'rgba(33, 150, 243, 0.9)',
+                ammonia: 'rgba(216, 67, 21, 0.9)',
+                feed: 'rgba(255, 152, 0, 0.9)',
+                water: 'rgba(3, 169, 244, 0.9)',
+                activity: 'rgba(156, 39, 176, 0.9)'
+            };
+
+            // Create chart function
+            function createChart(canvasId, label, dataKey, color, isMobile = false) {
+                const ctx = document.getElementById(canvasId);
+                if (!ctx) return null;
+                
+                const dataPoints = history.map(x => x[dataKey] || 0);
+                if (dataPoints.length === 0) return null;
+                
+                return new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: label,
+                            data: dataPoints,
+                            borderColor: color,
+                            backgroundColor: color.replace('0.9', '0.1'),
+                            tension: 0.3,
+                            pointRadius: isMobile ? 2 : 0,
+                            borderWidth: isMobile ? 1.5 : 2,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                                padding: 12,
+                                titleFont: { size: isMobile ? 10 : 12 },
+                                bodyFont: { size: isMobile ? 10 : 12 }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                ticks: {
+                                    maxTicksLimit: isMobile ? 4 : 6,
+                                    font: { size: isMobile ? 9 : 10 },
+                                    color: 'var(--pg-text-tertiary)'
+                                }
+                            },
+                            y: {
+                                beginAtZero: dataKey !== 'temperature',
+                                grid: { 
+                                    color: 'rgba(27,94,32,0.05)',
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    font: { size: isMobile ? 9 : 10 },
+                                    color: 'var(--pg-text-tertiary)'
+                                }
+                            }
+                        },
+                        interaction: {
+                            intersect: false,
+                            mode: 'nearest'
+                        }
+                    }
+                });
+            }
+
+            // Create all desktop charts
+            const desktopCharts = {
+                temp: createChart('chartTemp', 'Temperature (°C)', 'temperature', chartColors.temperature),
+                humidity: createChart('chartHumidity', 'Humidity (%)', 'humidity', chartColors.humidity),
+                ammonia: createChart('chartAmmonia', 'Ammonia (ppm)', 'ammonia', chartColors.ammonia),
+                feed: createChart('chartFeed', 'Feed Level (%)', 'feed_level', chartColors.feed),
+                water: createChart('chartWater', 'Water Level (%)', 'water_level', chartColors.water),
+                activity: createChart('chartActivity', 'Activity (%)', 'activity_level', chartColors.activity)
+            };
+
+            // Create all mobile charts
+            const mobileCharts = {
+                temp: createChart('chartTempMobile', 'Temperature (°C)', 'temperature', chartColors.temperature, true),
+                humidity: createChart('chartHumidityMobile', 'Humidity (%)', 'humidity', chartColors.humidity, true),
+                ammonia: createChart('chartAmmoniaMobile', 'Ammonia (ppm)', 'ammonia', chartColors.ammonia, true),
+                feed: createChart('chartFeedMobile', 'Feed Level (%)', 'feed_level', chartColors.feed, true),
+                water: createChart('chartWaterMobile', 'Water Level (%)', 'water_level', chartColors.water, true),
+                activity: createChart('chartActivityMobile', 'Activity (%)', 'activity_level', chartColors.activity, true)
+            };
+        }
+
+        function showNoDataMessage() {
+            const chartsSection = document.querySelector('.charts-section');
+            if (chartsSection) {
+                chartsSection.innerHTML = `
+                    <div class="no-data-state text-center py-5">
+                        <div class="no-data-illustration mb-4">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 class="mb-3" style="color:var(--pg-forest-green)">No Historical Data Available</h3>
+                        <p class="pg-muted mb-4">No readings found for the selected time range.</p>
+                        
+                    </div>
+                `;
+            }
+        }
+
+        // Chart view toggle
+        const toggleButtons = document.querySelectorAll('.toggle-btn');
+        const gridView = document.getElementById('gridView');
+        const listView = document.getElementById('listView');
+
+        toggleButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const view = this.dataset.view;
+                
+                toggleButtons.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                if (view === 'grid') {
+                    gridView.style.display = 'block';
+                    listView.style.display = 'none';
+                } else {
+                    gridView.style.display = 'none';
+                    listView.style.display = 'block';
+                }
+                
+                // Trigger resize for charts
+                window.dispatchEvent(new Event('resize'));
+            });
+        });
+
+        // Initialize based on screen size
+        function initializeView() {
+            const isMobile = window.innerWidth < 992;
+            
+            if (isMobile) {
+                document.querySelector('[data-view="list"]').click();
+            } else {
+                document.querySelector('[data-view="grid"]').click();
+            }
+        }
+
+        // Initialize view
+        initializeView();
+
+        // Custom range toggle
+        const toggleCustomRange = document.getElementById('toggleCustomRange');
+        const customRangeContainer = document.getElementById('customRangeContainer');
+        
+        if (toggleCustomRange && customRangeContainer) {
+            toggleCustomRange.addEventListener('click', function() {
+                if (customRangeContainer.style.display === 'none') {
+                    customRangeContainer.style.display = 'block';
+                    this.innerHTML = '<i class="fas fa-times me-1"></i>Cancel';
+                } else {
+                    customRangeContainer.style.display = 'none';
+                    this.innerHTML = '<i class="fas fa-calendar-alt me-1"></i>Custom Range';
+                }
+            });
+        }
+
+        // Collapse/expand list items
+        const listHeaders = document.querySelectorAll('.list-chart-header');
+        listHeaders.forEach(header => {
+            header.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const target = document.querySelector(targetId);
+                if (target) {
+                    const isCollapsed = target.classList.contains('show');
+                    if (isCollapsed) {
+                        target.classList.remove('show');
+                    } else {
+                        target.classList.add('show');
+                    }
+                    
+                    const icon = this.querySelector('.fa-chevron-down');
+                    if (icon) {
+                        icon.style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(180deg)';
+                    }
+                }
+            });
+        });
+        
+        // Update on resize
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(initializeView, 250);
+        });
+    });
+</script>
+{% endblock %}

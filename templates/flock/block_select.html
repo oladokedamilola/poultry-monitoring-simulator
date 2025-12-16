@@ -1,0 +1,517 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+{% block title %}Choose Simulation Block{% endblock %}
+
+{% block content %}
+<div class="container-wide py-4">
+    
+    <!-- Page Header -->
+    <div class="simulation-header mb-5">
+        <h2 style="color:var(--pg-forest-green)" class="mb-2">Start Live Simulation</h2>
+        <p class="pg-muted">Select a poultry block to begin real-time monitoring simulation</p>
+    </div>
+
+    {% if blocks %}
+        <!-- Blocks Grid -->
+        <div class="simulation-grid">
+            <div class="row g-4">
+                {% for block in blocks %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="simulation-block-card">
+                        <!-- Block Header -->
+                        <div class="block-card-header">
+                            <div class="block-icon">
+                                <i class="fas fa-kiwi-bird"></i>
+                            </div>
+                            <div class="block-info">
+                                <h4 class="block-name">{{ block.name }}</h4>
+                                <div class="block-status">
+                                    <span class="status-dot"></span>
+                                    <span class="status-text">Ready for simulation</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Block Details -->
+                        <div class="block-details">
+                            <div class="detail-row">
+                                <div class="detail-label">
+                                    <i class="fas fa-dove"></i>
+                                    <span>Birds</span>
+                                </div>
+                                <div class="detail-value">{{ block.number_of_birds }}</div>
+                            </div>
+                            
+                            <div class="detail-row">
+                                <div class="detail-label">
+                                    <i class="fas fa-dna"></i>
+                                    <span>Breed</span>
+                                </div>
+                                <div class="detail-value">{{ block.get_breed_display }}</div>
+                            </div>
+                            
+                            <div class="detail-row">
+                                <div class="detail-label">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <span>Age Group</span>
+                                </div>
+                                <div class="detail-value">{{ block.get_age_group_display }}</div>
+                            </div>
+                            
+                            <div class="detail-row">
+                                <div class="detail-label">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Created</span>
+                                </div>
+                                <div class="detail-value">{{ block.created_at|date:"M d, Y" }}</div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="block-actions">
+                            <a href="{% url 'live' block.id %}" class="simulation-btn">
+                                <i class="fas fa-play-circle me-2"></i>
+                                Start Live Simulation
+                            </a>
+                            <div class="action-links">
+                                <a href="{% url 'flock:detail' block.id %}" class="action-link">
+                                    <i class="fas fa-eye me-1"></i>View Details
+                                </a>
+                                <a href="{% url 'flock:update' block.id %}" class="action-link">
+                                    <i class="fas fa-edit me-1"></i>Edit
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Simulation Info -->
+        <div class="simulation-info mt-5">
+            <div class="pg-card">
+                <div class="card-title">
+                    <i class="fas fa-info-circle me-2" style="color:var(--pg-forest-green)"></i>
+                    About Live Simulation
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h6>Real-time Monitoring</h6>
+                            <p class="pg-muted">Watch simulated sensor data update live on your dashboard.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <h6>Smart Alerts</h6>
+                            <p class="pg-muted">Receive notifications for abnormal temperature, humidity, and ammonia levels.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-history"></i>
+                            </div>
+                            <h6>Historical Data</h6>
+                            <p class="pg-muted">All simulated data is stored for trend analysis and review.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <!-- Empty State -->
+        <div class="empty-simulation-state text-center py-5">
+            <div class="empty-illustration mb-4">
+                <i class="fas fa-play-circle"></i>
+            </div>
+            <h3 class="mb-3" style="color:var(--pg-forest-green)">No Blocks Available</h3>
+            <p class="pg-muted mb-4">Create a poultry block to begin live simulation</p>
+            
+            <div class="empty-actions">
+                <a href="{% url 'flock:create' %}" class="pg-btn pg-btn-primary">
+                    <i class="fas fa-plus me-2"></i>Create Your First Block
+                </a>
+                <a href="{% url 'flock:blocks' %}" class="pg-btn pg-btn-ghost">
+                    <i class="fas fa-list me-2"></i>View All Blocks
+                </a>
+            </div>
+
+            <!-- Quick Guide -->
+            <div class="quick-guide mt-5">
+                <h5 class="mb-4">How Live Simulation Works</h5>
+                <div class="guide-steps">
+                    <div class="guide-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h6>Create a Poultry Block</h6>
+                            <p>Define your flock's breed, age, and size.</p>
+                        </div>
+                    </div>
+                    <div class="guide-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h6>Start Simulation</h6>
+                            <p>Launch virtual sensors to generate realistic farm data.</p>
+                        </div>
+                    </div>
+                    <div class="guide-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h6>Monitor & Analyze</h6>
+                            <p>Watch real-time data and receive smart alerts.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+
+<style>
+    /* Simulation Header */
+    .simulation-header {
+        text-align: center;
+        padding: 1rem 0;
+    }
+
+    .simulation-header h2 {
+        font-size: 2.2rem;
+        font-weight: 700;
+    }
+
+    .simulation-header p {
+        font-size: 1.1rem;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    /* Block Cards */
+    .simulation-block-card {
+        background: var(--pg-surface);
+        border-radius: var(--pg-radius-lg);
+        border: 1px solid rgba(27,94,32,0.08);
+        padding: 1.5rem;
+        height: 100%;
+        transition: all 0.3s var(--pg-ease);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .simulation-block-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--pg-shadow);
+        border-color: rgba(27,94,32,0.15);
+    }
+
+    .block-card-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(27,94,32,0.05);
+    }
+
+    .block-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, rgba(27,94,32,0.1) 0%, rgba(27,94,32,0.05) 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--pg-forest-green);
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .block-info {
+        flex: 1;
+    }
+
+    .block-name {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--pg-text-primary);
+        margin-bottom: 0.25rem;
+    }
+
+    .block-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        background: var(--pg-success);
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    .status-text {
+        font-size: 0.85rem;
+        color: var(--pg-success);
+        font-weight: 500;
+    }
+
+    /* Block Details */
+    .block-details {
+        flex: 1;
+        margin-bottom: 1.5rem;
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(27,94,32,0.03);
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .detail-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--pg-text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .detail-label i {
+        color: var(--pg-forest-green);
+        width: 16px;
+    }
+
+    .detail-value {
+        font-weight: 600;
+        color: var(--pg-text-primary);
+        font-size: 0.95rem;
+    }
+
+    /* Action Buttons */
+    .block-actions {
+        margin-top: auto;
+    }
+
+    .simulation-btn {
+        display: block;
+        width: 100%;
+        padding: 0.875rem;
+        background: linear-gradient(135deg, var(--pg-forest-green) 0%, #1a511f 100%);
+        color: white;
+        border: none;
+        border-radius: var(--pg-radius);
+        font-weight: 600;
+        text-align: center;
+        text-decoration: none;
+        transition: all 0.3s var(--pg-ease);
+        margin-bottom: 1rem;
+    }
+
+    .simulation-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(27,94,32,0.2);
+        color: white;
+    }
+
+    .action-links {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+    }
+
+    .action-link {
+        color: var(--pg-text-tertiary);
+        text-decoration: none;
+        font-size: 0.85rem;
+        transition: color 0.2s var(--pg-ease);
+    }
+
+    .action-link:hover {
+        color: var(--pg-forest-green);
+    }
+
+    /* Simulation Info */
+    .simulation-info .pg-card {
+        padding: 2rem;
+    }
+
+    .info-item {
+        text-align: center;
+        padding: 1rem;
+    }
+
+    .info-icon {
+        font-size: 2rem;
+        color: var(--pg-forest-green);
+        margin-bottom: 1rem;
+        width: 60px;
+        height: 60px;
+        background: rgba(27,94,32,0.08);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+    }
+
+    .info-item h6 {
+        font-size: 1rem;
+        color: var(--pg-text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .info-item p {
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    /* Empty State */
+    .empty-simulation-state {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .empty-illustration {
+        font-size: 4rem;
+        color: rgba(27,94,32,0.2);
+        margin-bottom: 2rem;
+    }
+
+    .empty-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+
+    /* Quick Guide */
+    .quick-guide {
+        background: rgba(27,94,32,0.03);
+        border-radius: var(--pg-radius);
+        padding: 2rem;
+        margin-top: 2rem;
+    }
+
+    .quick-guide h5 {
+        text-align: center;
+        color: var(--pg-forest-green);
+        font-size: 1.3rem;
+    }
+
+    .guide-steps {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .guide-step {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .guide-step .step-number {
+        width: 40px;
+        height: 40px;
+        background: rgba(27,94,32,0.1);
+        color: var(--pg-forest-green);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    .guide-step .step-content h6 {
+        font-size: 1rem;
+        color: var(--pg-text-primary);
+        margin-bottom: 0.25rem;
+    }
+
+    .guide-step .step-content p {
+        font-size: 0.9rem;
+        color: var(--pg-text-tertiary);
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .simulation-header h2 {
+            font-size: 1.8rem;
+        }
+
+        .simulation-header p {
+            font-size: 1rem;
+        }
+
+        .empty-actions {
+            flex-direction: column;
+        }
+
+        .empty-actions .pg-btn {
+            width: 100%;
+        }
+
+        .guide-steps {
+            grid-template-columns: 1fr;
+        }
+
+        .info-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .action-links {
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .simulation-block-card {
+            padding: 1.25rem;
+        }
+
+        .block-card-header {
+            flex-direction: column;
+            text-align: center;
+            gap: 0.75rem;
+        }
+
+        .block-icon {
+            width: 50px;
+            height: 50px;
+            font-size: 1.25rem;
+        }
+
+        .simulation-info .pg-card {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,500 @@
+<!-- templates/base.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PoultraGuard - {% block title %}{% endblock %}</title>
+
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom Brand CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <link rel="icon" type="image/x-icon" href="{% static 'images/fav.png' %}"> 
+    
+    <style>
+        /* Flash messages styling */
+        .flash-messages {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1050;
+            width: 90%;
+            max-width: 600px;
+            pointer-events: none;
+        }
+        
+        .flash-message {
+            pointer-events: auto;
+            background: var(--pg-surface);
+            border-radius: var(--pg-radius);
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border-left: 4px solid var(--pg-forest-green);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            animation: slideDown 0.3s var(--pg-ease);
+            transform-origin: top center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .flash-message::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--pg-forest-green);
+            animation: progressBar 7s linear forwards;
+        }
+        
+        .flash-message.success {
+            border-left-color: var(--pg-success);
+        }
+        
+        .flash-message.success::before {
+            background: var(--pg-success);
+        }
+        
+        .flash-message.error, .flash-message.danger {
+            border-left-color: var(--pg-danger);
+        }
+        
+        .flash-message.error::before, .flash-message.danger::before {
+            background: var(--pg-danger);
+        }
+        
+        .flash-message.warning {
+            border-left-color: var(--pg-warning);
+        }
+        
+        .flash-message.warning::before {
+            background: var(--pg-warning);
+        }
+        
+        .flash-message.info {
+            border-left-color: var(--pg-info);
+        }
+        
+        .flash-message.info::before {
+            background: var(--pg-info);
+        }
+        
+        .flash-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .flash-icon {
+            font-size: 1.25rem;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .flash-message.success .flash-icon {
+            color: var(--pg-success);
+        }
+        
+        .flash-message.error .flash-icon, 
+        .flash-message.danger .flash-icon {
+            color: var(--pg-danger);
+        }
+        
+        .flash-message.warning .flash-icon {
+            color: var(--pg-warning);
+        }
+        
+        .flash-message.info .flash-icon {
+            color: var(--pg-info);
+        }
+        
+        .flash-text {
+            flex: 1;
+            color: var(--pg-text-primary);
+            font-weight: 500;
+        }
+        
+        .flash-close {
+            background: transparent;
+            border: none;
+            color: var(--pg-text-tertiary);
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s var(--pg-ease);
+            width: 28px;
+            height: 28px;
+        }
+        
+        .flash-close:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--pg-text-primary);
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+        
+        @keyframes progressBar {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+        
+        /* Navbar toggle button for mobile */
+        .navbar-toggle {
+            display: none;
+            background: transparent;
+            border: 1px solid rgba(27,94,32,0.08);
+            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--pg-forest-green);
+            transition: all 0.2s var(--pg-ease);
+        }
+        
+        .navbar-toggle:hover {
+            background: rgba(27,94,32,0.04);
+        }
+        
+        .navbar-toggle i {
+            font-size: 1.25rem;
+        }
+        
+        /* Mobile navigation */
+        .mobile-nav {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--pg-surface);
+            border-bottom: 1px solid rgba(27,94,32,0.06);
+            padding: 1rem;
+            box-shadow: 0 10px 25px rgba(27,94,32,0.08);
+            z-index: 1000;
+            flex-direction: column;
+            gap: 0.75rem;
+            animation: slideDownMobile 0.3s var(--pg-ease);
+        }
+        
+        .mobile-nav.show {
+            display: flex;
+        }
+        
+        @keyframes slideDownMobile {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .navbar-toggle {
+                display: flex;
+            }
+            
+            .nav-actions {
+                display: none !important;
+            }
+            
+            .flash-messages {
+                top: 70px;
+                width: 95%;
+            }
+            
+            .flash-message {
+                padding: 0.875rem 1rem;
+            }
+            
+            .flash-icon {
+                font-size: 1.1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .flash-message {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+            }
+            
+            .flash-content {
+                width: 100%;
+            }
+            
+            .flash-close {
+                align-self: flex-end;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Flash Messages Container -->
+    <div class="flash-messages" id="flashMessages">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="flash-message {{ message.tags }}" data-id="{{ forloop.counter }}">
+                    <div class="flash-content">
+                        <div class="flash-icon">
+                            {% if message.tags == 'success' %}
+                                <i class="fas fa-check-circle"></i>
+                            {% elif message.tags == 'error' or message.tags == 'danger' %}
+                                <i class="fas fa-exclamation-circle"></i>
+                            {% elif message.tags == 'warning' %}
+                                <i class="fas fa-exclamation-triangle"></i>
+                            {% elif message.tags == 'info' %}
+                                <i class="fas fa-info-circle"></i>
+                            {% else %}
+                                <i class="fas fa-bell"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flash-text">{{ message }}</div>
+                    </div>
+                    <button class="flash-close" aria-label="Close message">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- MAIN NAVBAR - THIS WAS MISSING! -->
+    <nav class="pg-navbar">
+        <div class="brand">
+            <a href="{% url 'home' %}" style="text-decoration: none; display: flex; align-items: center; gap: 0.75rem;">
+                <div class="logo">P</div>
+                <span class="title">PoultraGuard</span>
+            </a>
+        </div>
+
+        <!-- Desktop Navigation -->
+        <div class="nav-actions">
+            {% if user.is_authenticated %}
+                <!-- Authenticated User Links -->
+                <a href="{% url 'dashboard' %}" class="pg-btn pg-btn-ghost">
+                    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                </a>
+                <div class="dropdown" style="display: inline-block;">
+                    <button class="pg-btn pg-btn-ghost dropdown-toggle" type="button" id="userDropdown" 
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user-circle me-1"></i>{{ user.username|truncatechars:15 }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li>
+                            <a class="dropdown-item" href="{% url 'dashboard' %}">
+                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item text-danger" href="{% url 'logout' %}">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            {% else %}
+                <!-- Non-Authenticated User Links -->
+                <a href="{% url 'home' %}" class="pg-btn pg-btn-ghost">
+                    <i class="fas fa-home me-1"></i>Home
+                </a>
+                <a href="{% url 'login' %}" class="pg-btn pg-btn-ghost">
+                    <i class="fas fa-sign-in-alt me-1"></i>Login
+                </a>
+                <a href="{% url 'register' %}" class="pg-btn pg-btn-primary">
+                    <i class="fas fa-user-plus me-1"></i>Register
+                </a>
+            {% endif %}
+            {% block navbar_extra %}{% endblock %}
+        </div>
+        
+        <!-- Mobile Toggle Button -->
+        <button class="navbar-toggle" id="navbarToggle" aria-label="Toggle navigation">
+            <i class="fas fa-bars"></i>
+        </button>
+    </nav>
+
+    <!-- Mobile Navigation (hidden by default) -->
+    <div class="mobile-nav" id="mobileNav">
+        {% if user.is_authenticated %}
+            <!-- Authenticated User Mobile Links -->
+            <a href="{% url 'dashboard' %}" class="pg-btn pg-btn-ghost w-100 text-start">
+                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+            </a>
+            <div class="dropdown-divider"></div>
+            <a href="{% url 'logout' %}" class="pg-btn pg-btn-ghost w-100 text-start text-danger">
+                <i class="fas fa-sign-out-alt me-2"></i>Logout
+            </a>
+        {% else %}
+            <!-- Non-Authenticated User Mobile Links -->
+            <a href="{% url 'home' %}" class="pg-btn pg-btn-ghost w-100 text-start">
+                <i class="fas fa-home me-2"></i>Home
+            </a>
+            <a href="{% url 'login' %}" class="pg-btn pg-btn-ghost w-100 text-start">
+                <i class="fas fa-sign-in-alt me-2"></i>Login
+            </a>
+            <a href="{% url 'register' %}" class="pg-btn pg-btn-primary w-100 text-start">
+                <i class="fas fa-user-plus me-2"></i>Register
+            </a>
+        {% endif %}
+        {% block mobile_nav_extra %}{% endblock %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="container-wide mt-4">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer class="pg-footer mt-4">
+        &copy; 2025 PoultraGuard — Smart care for every feather.
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Flash Messages & Navbar Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile navbar toggle
+            const navbarToggle = document.getElementById('navbarToggle');
+            const mobileNav = document.getElementById('mobileNav');
+            
+            if (navbarToggle && mobileNav) {
+                navbarToggle.addEventListener('click', function() {
+                    mobileNav.classList.toggle('show');
+                    const icon = this.querySelector('i');
+                    if (mobileNav.classList.contains('show')) {
+                        icon.classList.remove('fa-bars');
+                        icon.classList.add('fa-times');
+                    } else {
+                        icon.classList.remove('fa-times');
+                        icon.classList.add('fa-bars');
+                    }
+                });
+                
+                // Close mobile nav when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!navbarToggle.contains(event.target) && !mobileNav.contains(event.target)) {
+                        mobileNav.classList.remove('show');
+                        const icon = navbarToggle.querySelector('i');
+                        icon.classList.remove('fa-times');
+                        icon.classList.add('fa-bars');
+                    }
+                });
+            }
+            
+            // Flash messages functionality
+            const flashMessages = document.getElementById('flashMessages');
+            
+            if (flashMessages) {
+                const messages = flashMessages.querySelectorAll('.flash-message');
+                
+                messages.forEach(message => {
+                    const closeBtn = message.querySelector('.flash-close');
+                    const messageId = message.getAttribute('data-id');
+                    
+                    // Auto-dismiss after 7 seconds
+                    const dismissTimeout = setTimeout(() => {
+                        dismissMessage(message);
+                    }, 7000);
+                    
+                    // Close button click
+                    if (closeBtn) {
+                        closeBtn.addEventListener('click', () => {
+                            clearTimeout(dismissTimeout);
+                            dismissMessage(message);
+                        });
+                    }
+                    
+                    // Pause auto-dismiss on hover
+                    message.addEventListener('mouseenter', () => {
+                        clearTimeout(dismissTimeout);
+                        message.style.setProperty('--pause-animation', 'paused');
+                    });
+                    
+                    // Resume auto-dismiss when mouse leaves
+                    message.addEventListener('mouseleave', () => {
+                        setTimeout(() => {
+                            dismissMessage(message);
+                        }, 7000);
+                    });
+                    
+                    // Store message ID to prevent duplicates if needed
+                    message.dataset.timeoutId = dismissTimeout;
+                });
+                
+                // Function to dismiss a message with animation
+                function dismissMessage(messageElement) {
+                    messageElement.style.animation = 'none';
+                    messageElement.style.transform = 'translateX(-50%) translateY(-20px)';
+                    messageElement.style.opacity = '0';
+                    messageElement.style.transition = 'all 0.3s var(--pg-ease)';
+                    
+                    setTimeout(() => {
+                        if (messageElement.parentNode === flashMessages) {
+                            flashMessages.removeChild(messageElement);
+                            
+                            // Remove container if no messages left
+                            if (flashMessages.children.length === 0) {
+                                flashMessages.style.display = 'none';
+                            }
+                        }
+                    }, 300);
+                }
+                
+                // Display messages container
+                if (messages.length > 0) {
+                    flashMessages.style.display = 'block';
+                }
+            }
+            
+            // Close flash message when clicking anywhere on it (optional)
+            document.addEventListener('click', function(event) {
+                if (event.target.closest('.flash-message') && !event.target.closest('.flash-close')) {
+                    const message = event.target.closest('.flash-message');
+                    if (message.dataset.timeoutId) {
+                        clearTimeout(parseInt(message.dataset.timeoutId));
+                    }
+                    dismissMessage(message);
+                }
+            });
+        });
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>
